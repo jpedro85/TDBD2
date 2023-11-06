@@ -150,13 +150,13 @@ if (!doesUserHavePermission("manage_allowed_values")) {
                                 $allowedValueRows .= "<td>{$allowedValue["state"]}</td>";
 
                                 // Checking whether the current allowedValue state is active or inactive to have the correct action of changing state
-                                $allowedValue["state"] == "active" ? $allowedValueAction = "<a href=''>[desativar]</a>" : $allowedValueAction = "<a href=''>[ativar]</a>";
+                                $allowedValue["state"] == "active" ? $allowedValueAction = "<a href='$editDataPage?estado=ativar&tipo=valor_permitido&id={$allowedValue["id"]}'>[desativar]</a>" : $allowedValueAction = "<a href='$editDataPage?estado=desativar&tipo=valor_permitido&id={$allowedValue["id"]}'>[ativar]</a>";
 
                                 // Formatting last column to have the all actions corresponding to the allowedValue data
                                 $allowedValueRows .= "<td>
-                                    <a href=''>[editar]</a>
+                                    <a href='$editDataPage?estado=editart&tipo=valor_permitido&id={$allowedValue["id"]}'>[editar]</a>
                                     {$allowedValueAction}
-                                    <a href=''>[editar]</a>
+                                    <a href='$editDataPage?estado=apagar&tipo=valor_permitido&id={$allowedValue["id"]}'>[apagar]</a>
                                 </td></tr>";
                             }
                         }
