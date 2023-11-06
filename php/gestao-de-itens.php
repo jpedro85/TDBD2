@@ -54,7 +54,7 @@ if (!doesUserHavePermission("manage_items")) {
                 if (!$_SESSION["Item_added"] && mysqli_begin_transaction($link)) {
 
                     // Insert new item in the correct table
-                    $insertNewItemQuery = "INSERT INTO item (id, name, item_type_id, state) VALUES (NULL, '" . $itemName . "', '" . $itemTypeId . "', '" . $_REQUEST["state"] . "')";
+                    $insertNewItemQuery = "INSERT INTO item ( name, item_type_id, state) VALUES ( '" . $itemName . "', '" . $itemTypeId . "', '" . $_REQUEST["state"] . "')";
                     $insertNewItemResult = mysqli_query($link, $insertNewItemQuery);
 
                     // Checks if the query was successful
@@ -63,7 +63,8 @@ if (!doesUserHavePermission("manage_items")) {
                         echo "Ocorreu um erro na Inserção de dados: " . mysqli_error($link);
                         voltar_atras();
                     } else {
-                        echo "<table>
+                        echo "<p>Inseriu os dados de novo item com sucesso.</p>
+                              <table>
                                     <tr>
                                         <th>id</th>
                                         <th>Nome</th>
@@ -72,23 +73,21 @@ if (!doesUserHavePermission("manage_items")) {
                                     </tr> 
                                     <tr>
                                         <td>" . mysqli_insert_id($link) . "</td>
-                                        <td>" . $_REQUEST["itemName"] . "</td>
-                                        <td>" . $_REQUEST["typeName"] . "</td>
-                                        <td>" . $_REQUEST["state"] . "</td>
+                                        <td>$itemName</td>
+                                        <td>{$_REQUEST["typeName"]}</td>
+                                        <td>{$_REQUEST["state"]}</td>
                                     </tr> 
                               </table>
+                              <p>Clique em <b>Continuar</b> para avançar</p>
                               <a href='$curtent_page'><button href='$current_page' >Continuar</button></a>";
                         // Commit the transaction
                         mysqli_commit($link);
                         $_SESSION["itemAdded"] = true;
                     }
-                } else {
-                    // Checks if item was added already so to not cause duplication when refreshing the page
-                    if ($_SESSION["itemAdded"]) {
-                        echo "O valor ja foi inserido";
-                    } else {
-                        echo "Ocorreu um erro na Inserção de dados: " . mysqli_error($link);
-                    }
+                }
+                // Checks if item was added already so to not cause duplication when refreshing the page
+                else if ($_SESSION["itemAdded"]) {
+                    echo "O item já foi inserido";
                 }
             }
         }

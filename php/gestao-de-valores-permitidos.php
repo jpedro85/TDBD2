@@ -5,7 +5,7 @@ require_once("custom/php/common.php");
 if (!doesUserHavePermission("manage_allowed_values")) {
     echo "Não tem autorização para aceder a esta página";
 } else {
-    if (array_key_exists("estado", $_REQUEST) && $_REQUEST["estado"] == "introducao"){
+    if (array_key_exists("estado", $_REQUEST) && $_REQUEST["estado"] == "introducao") {
         // Starting the form to be able to create or add new allowed values
         echo "<hr><h3>Gestão de valores permitidos - introdução</h3>";
         echo "<form method='post' action='{$current_page}'>";
@@ -16,7 +16,8 @@ if (!doesUserHavePermission("manage_allowed_values")) {
               <input type='hidden' name='estado' value='inserir' >
               <button type='submit'>Inserir valor permitido</button>";
         $_SESSION["valueAdded"] = false;
-    }else if (array_key_exists("estado", $_REQUEST) && $_REQUEST["estado"] == "inserir") {
+        $_SESSION["subitemId"] = $_REQUEST["subitem"];
+    } else if (array_key_exists("estado", $_REQUEST) && $_REQUEST["estado"] == "inserir") {
         echo "<h3>Gestão de valores permitidos - inserção</h3>";
 
         $validForm = true;
@@ -27,13 +28,49 @@ if (!doesUserHavePermission("manage_allowed_values")) {
         // Check allowed value received is empty or just numbers
         if (empty($newAllowedValued) || is_numeric($newAllowedValued)) {
             $validForm = false;
-            $invalidField .= "<p>Nome do valor permitido é invalido</p>";
+            $invalidField .= "<p>Nome do valor permitido é inválido</p>";
         }
         // Checks if there were any errors in the server side verification
         if (!$validForm) {
             echo $invalidField;
         } else {
+            $insertNewAllowedValueQuery = "INSERT INTO subitem_allowed_value(subitem_id, value, state) VALUES ('{$_SESSION["subitemId"]}', '$newAllowedValued', 'active' )";
 
+            // Checks whether new allowed value was already added to the database if not start transaction
+            if (!$_SESSION["valueAdded"] && mysqli_begin_transaction($link)) {
+                // Checks whether the insert query was successful or not if not rollbacks the transaction and shows error
+                $insertNewAllowedValueResult = mysqli_query($link, $insertNewAllowedValueQuery);
+                if (!$insertNewAllowedValueResult) {
+                    mysqli_rollback($link);
+                    echo "Ocorreu um erro na Inserção de dados: " . mysqli_error($link);
+                    voltar_atras();
+                } else {
+                    echo "<p>Inseriu os dados de novo valor permitido com sucesso.</p>
+                              <table>
+                                    <tr>
+                                        <th>id</th>
+                                        <th>value</th>
+                                        <th>subitem_id</th>
+                                        <th>state</th>
+                                    </tr> 
+                                    <tr>
+                                        <td>" . mysqli_insert_id($link) . "</td>
+                                        <td> $newAllowedValued</td>
+                                        <td>{$_SESSION["subitemId"]}</td>
+                                        <td>active</td>
+                                    </tr> 
+                              </table>
+                              <p>Clique em <b>Continuar</b> para avançar</p>
+                              <a href='$current_page'><button href='$current_page' >Continuar</button></a>";
+                    // Commit the transaction
+                    mysqli_commit($link);
+                    $_SESSION["itemAdded"] = true;
+                }
+            }
+            // Checks if item was added already so to not cause duplication when refreshing the page
+            else if ($_SESSION["itemAdded"]) {
+                echo "O valor ja foi inserido";
+            }
         }
     } else {
         // Initial State if there is no REQUEST["estado"]
@@ -51,7 +88,6 @@ if (!doesUserHavePermission("manage_allowed_values")) {
           </thead>";
 
         echo "<tbody>";
-        // Item subitens subitem _allowed_value
         // Query the item of the database
         $itemQuery = "SELECT item.id, item.name FROM item ORDER BY item.name";
         $itemData = mysqli_query($link, $itemQuery);
@@ -83,7 +119,7 @@ if (!doesUserHavePermission("manage_allowed_values")) {
                     }
                     while ($subitem = mysqli_fetch_assoc($subitemData)) {
                         //
-                        $hrefSubitem = $current_page ."?estado=introducao&subitem=". $subitem["id"];
+                        $hrefSubitem = $current_page . "?estado=introducao&subitem=" . $subitem["id"];
 
                         // Query the corresponding allowed values linked to this subitem
                         $subitemAllowedValueQuery = "SELECT id, value, state FROM subitem_allowed_value WHERE subitem_id = '{$subitem["id"]}' ORDER BY id";
