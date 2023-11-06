@@ -3,6 +3,8 @@ global $link;
 $link = createDatabaseConnection();
 global $current_page;
 $current_page = get_site_url() . '/' . basename(get_permalink());
+global $editDataPage;
+$editDataPage = get_site_url() . '/edicao-de-dados';
 
 /**
  * The function creates a database connection using the provided host, user, password, and database
@@ -69,7 +71,8 @@ function checkFieldExistsOnDatabase($connection, $value, $table, $column)
     return ($numRows > 0);
 }
 
-function voltar_atras(){
+function voltar_atras()
+{
 
     echo "<script type='text/javascript'>document.write(\"<a href='javascript:history.back()'> <button class='continueButton' >Voltar Atrás</button> </a>\");</script>
     <noscript>

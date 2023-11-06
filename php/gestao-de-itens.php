@@ -51,7 +51,7 @@ if (!doesUserHavePermission("manage_items")) {
             } else {
                 $itemTypeId = mysqli_fetch_assoc($itemTypeIdResult)["id"];
                 // Start transaction to insert items
-                if (!$_SESSION["Item_added"] && mysqli_begin_transaction($link)) {
+                if (!$_SESSION["itemAdded"] && mysqli_begin_transaction($link)) {
 
                     // Insert new item in the correct table
                     $insertNewItemQuery = "INSERT INTO item ( name, item_type_id, state) VALUES ( '" . $itemName . "', '" . $itemTypeId . "', '" . $_REQUEST["state"] . "')";
@@ -79,7 +79,7 @@ if (!doesUserHavePermission("manage_items")) {
                                     </tr> 
                               </table>
                               <p>Clique em <b>Continuar</b> para avançar</p>
-                              <a href='$curtent_page'><button href='$current_page' >Continuar</button></a>";
+                              <a href='$current_page'><button href='$current_page' >Continuar</button></a>";
                         // Commit the transaction
                         mysqli_commit($link);
                         $_SESSION["itemAdded"] = true;
@@ -137,13 +137,15 @@ if (!doesUserHavePermission("manage_items")) {
                         $itemTypeRows .= "<td>{$item["id"]}</td>";
                         $itemTypeRows .= "<td>{$item["itemName"]}</td>";
                         $itemTypeRows .= "<td>{$item["state"]}</td>";
+
                         // Checking whether the current item state is active or inactive to have the correct action of changing state
-                        $item["state"] == "active" ? $itemAction = "<a href=''>[desativar]</a>" : $itemAction = "<a href=''>[ativar]</a>";
+                        $item["state"] == "active" ? $itemAction = "<a href='$editDataPage?estado=ativar&tipo=item&id={$item["id"]}'>[desativar]</a>" : $itemAction = "<a href='$editDataPage?estado=ativar&tipo=item&id={$item["id"]}'>[ativar]</a>";
+
                         // Formatting last column to have the all actions corresponding to the item data
                         $itemTypeRows .= "<td>
-                                    <a href=''>[editar]</a>
+                                    <a href='$editDataPage?estado=editar&tipo=item&id={$item["id"]}'>[editar]</a>
                                     {$itemAction}
-                                    <a href=''>[editar]</a>
+                                    <a href='$editDataPage?estado=apagar&tipo=item&id={$item["id"]}'>[apagar]</a>
                                 </td></tr>";
 
                     }
