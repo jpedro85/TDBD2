@@ -5,7 +5,18 @@ require_once("custom/php/common.php");
 if (!doesUserHavePermission("manage_allowed_values")) {
     echo "Não tem autorização para aceder a esta página";
 } else {
-    if (array_key_exists("estado", $_REQUEST) && $_REQUEST["estado"] == "inserir") {
+    if (array_key_exists("estado", $_REQUEST) && $_REQUEST["estado"] == "introducao"){
+        // Starting the form to be able to create or add new allowed values
+        echo "<hr><h3>Gestão de valores permitidos - introdução</h3>";
+        echo "<form method='post' action='{$current_page}'>";
+
+        // The input for the new allowed value
+        echo "<h5>Nome do Valor Permitido</h5>
+              <input type='text' name='value' id='valueName' placeholder='Ex.: fino, ligeiro, moderado, fechadas ...'>
+              <input type='hidden' name='estado' value='inserir' >
+              <button type='submit'>Inserir valor permitido</button>";
+        $_SESSION["valueAdded"] = false;
+    }else if (array_key_exists("estado", $_REQUEST) && $_REQUEST["estado"] == "inserir") {
         echo "<h3>Gestão de valores permitidos - inserção</h3>";
 
         $validForm = true;
