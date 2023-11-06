@@ -125,20 +125,19 @@ if (!doesUserHavePermission("manage_items")) {
 
                     // Checks if the item_type actually has items linked to him
                     // if not all columns after are unified and outputs that there is no items and jumps current cycle
-                    $itemTypeItemsCount = mysqli_num_rows($itemData) == 0 ? 0 : mysqli_num_rows($itemData);
-                    if ($itemTypeItemsCount) {
-                        $itemTypeRows = "<tr> <td rowspan='{$itemTypeItemsCount}'>{$itemType["typeName"]}";
-                        $itemTypeRows .= "<td colspan='5'>Não há itens</td>";
+                    $itemTypeItemsCount = mysqli_num_rows($itemData);
+                    if ($itemTypeItemsCount == 0) {
+                        $itemTypeRows = "<tr> <td rowspan='1'>{$itemType["typeName"]}";
+                        $itemTypeRows .= "<td colspan='5'>Não há itens</td></tr>";
                         continue;
                     }
 
                     // Starting to format the item_type "row" by using the $itemTypeItemsCount value for the rowspan
-                    $itemTypeRows = "<tr> <td rowspan='{$itemTypeItemsCount}'>{$itemType["typeName"]}";
+                    $itemTypeRows = "<tr> <td rowspan='{$itemTypeItemsCount}'>{$itemType["typeName"]}</td>";
                     while ($item = mysqli_fetch_assoc($itemData)) {
                         $itemTypeRows .= "<td>{$item["id"]}</td>";
                         $itemTypeRows .= "<td>{$item["itemName"]}</td>";
                         $itemTypeRows .= "<td>{$item["state"]}</td>";
-                        $itemAction = "";
                         // Checking whether the current item state is active or inactive to have the correct action of changing state
                         $item["state"] == "active" ? $itemAction = "<a href=''>[desativar]</a>" : $itemAction = "<a href=''>[ativar]</a>";
                         // Formatting last column to have the all actions corresponding to the item data
@@ -155,10 +154,10 @@ if (!doesUserHavePermission("manage_items")) {
             }
         }
         // Close the table
-        echo "</table>";
-        echo "<hr><h3>Gestao de itens - introdução</h3>";
+        echo "</tbody></table>";
 
-        // Start the form to be able to create and add new items
+        // Starting the form to be able to create and add new items
+        echo "<hr><h3>Gestao de itens - introdução</h3>";
         echo "<form method='post' action='{$current_page}'>";
 
         // The input for the Name of the item and its type
@@ -181,7 +180,7 @@ if (!doesUserHavePermission("manage_items")) {
 
         // Hidden input to specify which state of the page im in
         echo "<input type='hidden' name='estado' value='inserir'>
-          <hr><button type='submit'>Submeter</button>";
+          <hr><button type='submit'>Inserir item</button>";
 
         // Initialize the session variable to be able to check if item was already added to DB or not
         $_SESSION["itemAdded"] = false;
