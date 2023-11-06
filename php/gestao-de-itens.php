@@ -2,6 +2,7 @@
 require_once("custom/php/common.php");
 // TODO Css for the popup saying the invalid form inputs
 // TODO CSS for the error in queries
+// TODO Client-Side Verifications
 
 if (!doesUserHavePermission("manage_items")) {
     echo "Não tem autorização para aceder a esta página";
@@ -107,12 +108,12 @@ if (!doesUserHavePermission("manage_items")) {
           </thead>";
 
         echo "<tbody>";
-        // Query the item_types of the databse
+        // Query the item_types of the database
         $itemTypeQuery = "SELECT type.id, type.name AS typeName FROM item_type AS type ORDER BY type.name";
         $itemTypeData = mysqli_query($link, $itemTypeQuery);
         // Check if query was successful
         if (!$itemTypeData) {
-            echo ":" . mysqli_error($link);
+            echo "Ocorreu um erro na consulta:" . mysqli_error($link);
         } else {
             while ($itemType = mysqli_fetch_assoc($itemTypeData)) {
                 // Query to fetch all the items that are linked with the current item_type
@@ -124,9 +125,10 @@ if (!doesUserHavePermission("manage_items")) {
 
                     // Checks if the item_type actually has items linked to him
                     // if not all columns after are unified and outputs that there is no items and jumps current cycle
-                    $itemTypeItemsCount = mysqli_num_rows($itemData);
-                    if ($itemTypeItemsCount == 0) {
-                        echo "<td colspan='5'> Não há itens </td>";
+                    $itemTypeItemsCount = mysqli_num_rows($itemData) == 0 ? 0 : mysqli_num_rows($itemData);
+                    if ($itemTypeItemsCount) {
+                        $itemTypeRows = "<tr> <td rowspan='{$itemTypeItemsCount}'>{$itemType["typeName"]}";
+                        $itemTypeRows .= "<td colspan='5'>Não há itens</td>";
                         continue;
                     }
 
