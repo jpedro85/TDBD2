@@ -27,7 +27,6 @@ while ($lineItem = mysqli_fetch_assoc($resultquery)) {
     $number_of_rows = mysqli_num_rows($resultquerySub);
     echo '<tr>';
     if($number_of_rows != 0){
-
         echo '<td rowspan="'.$number_of_rows.'">' . $lineItem["itname"] . '</td>';
         while ($lineSubItem = mysqli_fetch_assoc($resultquerySub)) {
             $queryUnitType="SELECT id, name FROM  subitem_unit_type  WHERE id=" . $lineSubItem["SubUnitT"];
@@ -66,6 +65,8 @@ while ($lineItem = mysqli_fetch_assoc($resultquery)) {
                  <td>' . $lineSubItem["SubValueType"] . '
                  </td>
                  <td>' . $lineSubItem["SubFFN"] . '
+                 </td>
+                 <td>' . $lineSubItem["SubFFT"] . '
                  </td>
                  <td>    --- 
                  </td>
