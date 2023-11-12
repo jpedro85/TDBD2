@@ -40,6 +40,7 @@ if (!doesUserHavePermission("manage_items")) {
         // Checks if there were any errors in the server side verification
         if (!$validForm) {
             echo $invalidFields;
+            voltar_atras();
         } else {
             // Fetch the item type id with same name as
             $itemTypeIdQuery = "SELECT id FROM item_type WHERE name = '{$typeName}'";
@@ -84,10 +85,10 @@ if (!doesUserHavePermission("manage_items")) {
                         mysqli_commit($link);
                         $_SESSION["itemAdded"] = true;
                     }
-                }
-                // Checks if item was added already so to not cause duplication when refreshing the page
+                } // Checks if item was added already so to not cause duplication when refreshing the page
                 else if ($_SESSION["itemAdded"]) {
                     echo "O item já foi inserido";
+                    voltar_atras();
                 }
             }
         }
@@ -128,6 +129,7 @@ if (!doesUserHavePermission("manage_items")) {
                     if ($itemTypeItemsCount == 0) {
                         $itemTypeRows = "<tr> <td rowspan='1'>{$itemType["typeName"]}";
                         $itemTypeRows .= "<td colspan='5'>Não há itens</td></tr>";
+                        echo $itemTypeRows;
                         continue;
                     }
 
