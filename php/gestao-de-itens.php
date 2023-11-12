@@ -88,6 +88,7 @@ if (!doesUserHavePermission("manage_items")) {
                 } // Checks if item was added already so to not cause duplication when refreshing the page
                 else if ($_SESSION["itemAdded"]) {
                     echo "O item já foi inserido";
+                    voltar_atras();
                 }
             }
         }

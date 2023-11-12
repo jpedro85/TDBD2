@@ -15,6 +15,7 @@ if (!doesUserHavePermission("manage_allowed_values")) {
               <input type='text' name='value' id='valueName' placeholder='Ex.: fino, ligeiro, moderado, fechadas ...'>
               <input type='hidden' name='estado' value='inserir' >
               <button type='submit'>Inserir valor permitido</button>";
+        voltar_atras();
         $_SESSION["valueAdded"] = false;
         $_SESSION["subitemId"] = $_REQUEST["subitem"];
     } else if (array_key_exists("estado", $_REQUEST) && $_REQUEST["estado"] == "inserir") {
@@ -64,12 +65,13 @@ if (!doesUserHavePermission("manage_allowed_values")) {
                               <a href='$current_page'><button href='$current_page' >Continuar</button></a>";
                     // Commit the transaction
                     mysqli_commit($link);
+                    // Session varible to check whether value has been added or not so to not have duplicates
                     $_SESSION["itemAdded"] = true;
                 }
-            }
-            // Checks if item was added already so to not cause duplication when refreshing the page
+            } // Checks if item was added already so to not cause duplication when refreshing the page
             else if ($_SESSION["itemAdded"]) {
                 echo "O valor ja foi inserido";
+                voltar_atras();
             }
         }
     } else {
@@ -112,13 +114,15 @@ if (!doesUserHavePermission("manage_allowed_values")) {
                     // Check if item has subitens if not fills the rest of the columns and jumps to the next item
                     $subitemAmount = mysqli_num_rows($subitemData);
                     if ($subitemAmount == 0) {
+                        // Adds +1 to $itemSubValuesAmount because it doesnt have subitens or values to count for the rowspan
                         $itemSubValuesAmount += 1;
                         $allowedValueRows .= "<tr><td rowspan='1'>{$item["name"]}</td>";
                         $allowedValueRows .= "<td colspan='6'>Não há subitems especificados cujo tipo de valor seja enum. Especificar primeiro novo(s) item(s) e depois voltar a esta opção</td></tr>";
+                        echo $allowedValueRows;
                         continue;
                     }
                     while ($subitem = mysqli_fetch_assoc($subitemData)) {
-                        //
+                        // Href for to add a new value to the subitem
                         $hrefSubitem = $current_page . "?estado=introducao&subitem=" . $subitem["id"];
 
                         // Query the corresponding allowed values linked to this subitem
@@ -130,6 +134,7 @@ if (!doesUserHavePermission("manage_allowed_values")) {
                             // Checks whether the subitem has allowed values if it doesn't fills the rest of the columns and jumps to the next subitem
                             $allowedValueAmount = mysqli_num_rows($subitemAllowedValueData);
                             if ($allowedValueAmount == 0) {
+                                // Adds +1 to $itemSubValuesAmount because it doesnt have values to count so it counts only the subitem for the rowspan
                                 $itemSubValuesAmount += 1;
                                 $allowedValueRows .= "<td rowspan='1'>{$subitem["id"]}</td>";
                                 $allowedValueRows .= "<td rowspan='1'><a href='$hrefSubitem'>[{$subitem["name"]}]</a></td>";
