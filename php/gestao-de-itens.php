@@ -1,4 +1,5 @@
 <?php
+// TODO Found bug in css link its custom/ag.css instead of /custom/ag.css on wp-contents/themes/responsive/function.php
 require_once("custom/php/common.php");
 // TODO Css for the popup saying the invalid form inputs
 // TODO CSS for the error in queries
