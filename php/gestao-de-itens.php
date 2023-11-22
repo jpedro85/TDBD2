@@ -79,8 +79,8 @@ if (!doesUserHavePermission("manage_items")) {
                                         <td>{$_REQUEST["state"]}</td>
                                     </tr> 
                               </table>
-                              <p>Clique em <b>Continuar</b> para avançar</p>
-                              <a href='$current_page'><button href='$current_page' >Continuar</button></a>";
+                              <p>Clique em <strong>Continuar</strong> para avançar</p>
+                              <a href='$current_page'><button>Continuar</button></a>";
                         // Commit the transaction
                         mysqli_commit($link);
                         $_SESSION["itemAdded"] = true;
@@ -89,11 +89,12 @@ if (!doesUserHavePermission("manage_items")) {
                 else if ($_SESSION["itemAdded"]) {
                     echo "O item já foi inserido";
                     voltar_atras();
+                } else {
+                    echo "Ocorreu um erro na Inserção de dados: " . mysqli_error($link);
+                    voltar_atras();
                 }
             }
         }
-
-
     } else {
         // Initial State if there is no REQUEST["estado"]
         echo "<table>";
@@ -141,7 +142,7 @@ if (!doesUserHavePermission("manage_items")) {
                         $itemTypeRows .= "<td>{$item["state"]}</td>";
 
                         // Checking whether the current item state is active or inactive to have the correct action of changing state
-                        $item["state"] == "active" ? $itemAction = "<a href='$editDataPage?estado=ativar&tipo=item&id={$item["id"]}'>[desativar]</a>" : $itemAction = "<a href='$editDataPage?estado=ativar&tipo=item&id={$item["id"]}'>[ativar]</a>";
+                        $item["state"] == "active" ? $itemAction = "<a href='$editDataPage?estado=desativar&tipo=item&id={$item["id"]}'>[desativar]</a>" : $itemAction = "<a href='$editDataPage?estado=ativar&tipo=item&id={$item["id"]}'>[ativar]</a>";
 
                         // Formatting last column to have the all actions corresponding to the item data
                         $itemTypeRows .= "<td>
@@ -188,7 +189,6 @@ if (!doesUserHavePermission("manage_items")) {
         // Initialize the session variable to be able to check if item was already added to DB or not
         $_SESSION["itemAdded"] = false;
     }
-
 }
 
 ?>

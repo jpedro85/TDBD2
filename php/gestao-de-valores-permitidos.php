@@ -61,8 +61,8 @@ if (!doesUserHavePermission("manage_allowed_values")) {
                                         <td>active</td>
                                     </tr> 
                               </table>
-                              <p>Clique em <b>Continuar</b> para avançar</p>
-                              <a href='$current_page'><button href='$current_page' >Continuar</button></a>";
+                              <p>Clique em <strong>Continuar</strong> para avançar</p>
+                              <a href='$current_page'><button>Continuar</button></a>";
                     // Commit the transaction
                     mysqli_commit($link);
                     // Session varible to check whether value has been added or not so to not have duplicates
@@ -155,7 +155,7 @@ if (!doesUserHavePermission("manage_allowed_values")) {
                                 $allowedValueRows .= "<td>{$allowedValue["state"]}</td>";
 
                                 // Checking whether the current allowedValue state is active or inactive to have the correct action of changing state
-                                $allowedValue["state"] == "active" ? $allowedValueAction = "<a href='$editDataPage?estado=ativar&tipo=valor_permitido&id={$allowedValue["id"]}'>[desativar]</a>" : $allowedValueAction = "<a href='$editDataPage?estado=desativar&tipo=valor_permitido&id={$allowedValue["id"]}'>[ativar]</a>";
+                                $allowedValue["state"] == "active" ? $allowedValueAction = "<a href='$editDataPage?estado=desativar&tipo=valor_permitido&id={$allowedValue["id"]}'>[desativar]</a>" : $allowedValueAction = "<a href='$editDataPage?estado=desativar&tipo=valor_permitido&id={$allowedValue["id"]}'>[ativar]</a>";
 
                                 // Formatting last column to have the all actions corresponding to the allowedValue data
                                 $allowedValueRows .= "<td>
