@@ -1,15 +1,8 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="\\wsl.localhost\Ubuntu\opt\lampp\htdocs\sgbd\custom\css\ag.css">
-</head>
-<body>
+
 <?php
 require_once("custom/php/common.php");
-connect();
-if(!is_user_logged_in()){
+//connect();
+if(!is_user_logged_in() && current_user_can('manage_subitems')){
     echo 'O Utilizador não tem permissões para aceder à página';
 }else {
     echo 2;
@@ -36,8 +29,58 @@ if(!is_user_logged_in()){
 // Se houver erros, exibe o aviso
         if ($erro) {
             echo '<div class="contorno">' . $camposF . '</div><br>';
-            voltaatras();
+            //voltaatras();
+
+            echo "<script type='text/javascript'>document.write(\"<a href='javascript:history.back()' class='backLink' title='Voltar atr&aacute;s'>Voltar atr&aacute;s</a>\");</script>
+            <noscript>
+            <a href='" . $_SERVER['HTTP_REFERER'] . "‘ class='backLink' title='Voltar atr&aacute;s'>Voltar atr&aacute;s</a>
+            </noscript>";
         }
+        echo '<form> 
+             <input type="hidden" name="ITname" value="' . $_REQUEST["ITname"] . '">
+             <input type="hidden" name="Eitem" value="' . $_REQUEST["Eitem"] . '">
+             <input type="hidden" name="slctunit" value="' . $_REQUEST["slctunit"] . '">
+             <input type="hidden" name="formCamp" value="' . $_REQUEST["formCamp"] . '">
+             <input type="hidden" name="mandatory" value="' . $_REQUEST["mandatory"] . '">
+             </form>';
+
+//Iserção da dados na Base de Dados
+        $itemQuery = mysqli_query($link, "SELECT name as itemName, id FROM item WHERE id = " . $_REQUEST["Eitem"]);
+        $itemFetch = mysqli_fetch_assoc($itemQuery);
+
+// Obtendo o ID do subitem
+        $subItemQuery = mysqli_query($link, "SELECT id as subItemID FROM subitem WHERE name = '" . $_REQUEST["ITname"] . "'");
+        $subItemFetch = mysqli_fetch_assoc($subItemQuery);
+
+// transformaçao do nome de campo de formulário com o id
+        $tresLetras = substr("'" . $itemFetch["itemName"] . "'", 1, 3);
+        $formFieldName = $tresLetras . "-" . $_REQUEST["ITname"];
+
+//Query de Inserção
+        $insertQuery = "INSERT INTO subitem(id, name, item_id, value_type, form_field_name, form_field_type, unit_type_id, form_field_order, mandatory, state) VALUES 
+                (NULL, '" . $_REQUEST["ITname"] . "', '" . $_REQUEST["Eitem"] . "', '" . $_REQUEST["valueT"] . "', '" . $formFieldName . "', '" . $_REQUEST["formTYPE"] . "', '" . $_REQUEST["slctunit"] . "', '" . $_REQUEST["formCamp"] . "', '" . $_REQUEST["mandatory"] . "', 'active')";
+
+// Verificação da query
+        if (!mysqli_query($link, $insertQuery)) {
+            // Exibindo mensagens de erro
+            echo mysqli_error($link);
+            echo "<li class='list'>Ocorreu um erro durante a inserção.</b>";
+           // voltaatras();
+        } else {
+            //Query para atualizar o nome de campo de formulário
+            /*$queryAtuali= mysqli_query($link,"SELECT id as NewID FROM subitem name = '" . $_REQUEST["ITname"] . "'" );
+            $queryAtualiFetch = mysqli_fetch_assoc($queryAtuali);*/
+            //Vai me dar o novo ID inserido na Base de Dados
+            // Exibindo mensagem de sucesso e botão para continuar
+
+            echo '<li><b class="success">Os dados foram inseridos com sucesso</b><br>Clique em Continuar para AVANÇAR!</li>
+        <a href=' . $current_page . ' ><button>Continuar</button></a>';
+            $NewID=mysqli_insert_id($link);
+            $NewFormFName = $tresLetras . "-".$NewID."-" . $_REQUEST["ITname"];
+            $updateQuery = "UPDATE subitem SET form_field_name = '" . $NewFormFName . "' WHERE id = " . $NewID;
+        }
+
+
     }else{
         echo '<table class="content-table">
     <tbody>
@@ -58,7 +101,7 @@ if(!is_user_logged_in()){
         $resultquery = mysqli_query($link, $queryItem);
         while ($lineItem = mysqli_fetch_assoc($resultquery)) {
             $querySubItem = "SELECT id as SubID, name as SubItName, value_type as SubValueType, form_field_name as SubFFN, form_field_type as SubFFT,
-        unit_type_id as SubUnitT,form_field_order as SubFFO, mandatory, state From subitem";
+        unit_type_id as SubUnitT,form_field_order as SubFFO, mandatory, state From subitem WHERE item_id=" . $lineItem["id"];
             $resultquerySub = mysqli_query($link, $querySubItem);
             $number_of_rows = mysqli_num_rows($resultquerySub);
             $lista .= '<option value="' . $lineItem['id'] . '"> ' . $lineItem['itname'] . '</option>';
@@ -104,8 +147,8 @@ if(!is_user_logged_in()){
         <h2>
         <b>Gestão de SubItems -INTRODUÇÃO</b>
         </h2>
-        <form action="' . $current_page . '" method="post>
-        <label for="ITname">Nome do Item:</label>
+        <form action="' . $current_page . '" method="post">
+        <label for="ITname">Nome do Subitem:<b>(Obrigatório!)</b></label>
         <br>
         <input type="text" id="ITname" name="ITname">
         <br>
@@ -115,19 +158,7 @@ if(!is_user_logged_in()){
             echo '<input type="radio" name="valueT" value="' . $v . '" checked >' . $v . '<br>';
         }
         ?>
-        <br>
-        <form action="<?= $current_page ?>" method="post">
-            <label for="ITname">Nome do Item:</label><br>
-            <input type="text" id="ITname" name="ITname"><br>
-
-            <p>Inserção do tipo de dados:</p>
-            <?php
-            $value_types = get_enum_values($link, "subitem", "value_type");
-            foreach ($value_types as $v) {
-                echo '<input type="radio" name="valueT" value="' . $v . '" checked>' . $v . '<br>';
-            }
-            ?>
-            <p>Escolha o Item</p>
+            <p>Escolha o Item: (Obrigatório!)</p>
             <select id="slctItems" name="Eitem">
                 <option value=""></option>
                 <?= $lista ?>
@@ -152,9 +183,9 @@ if(!is_user_logged_in()){
             <input type="hidden" name="estado" value="inserir"><br><br>
             <button type="submit" class="button-33">Submeter</button>
         </form>
+
         <?php
     }
 }
 ?>
-</body>
-</html>
+
