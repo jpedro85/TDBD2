@@ -40,13 +40,18 @@ if (!doesUserHavePermission("manage_items")) {
             echo "<div class='error-div'>$invalidFields</div>";
             voltar_atras();
         } else {
+
             // Fetch the item type id with same name as
             $itemTypeIdQuery = "SELECT id FROM item_type WHERE name = '{$typeName}'";
             $itemTypeIdResult = mysqli_query($link, $itemTypeIdQuery);
 
             // Checks if the query was successful
             if (!$itemTypeIdResult) {
-                echo "Ocorreu um erro na busca do item_typed id: " . mysqli_error($link);
+
+                echo "<div class='error-div'>
+                        <strong class='list' >Ocorreu um erro na Inserção de dados: " . mysqli_error($link) . "</strong>
+                      </div>";
+
             } else {
                 $itemTypeId = mysqli_fetch_assoc($itemTypeIdResult)["id"];
                 // Start transaction to insert items
@@ -58,11 +63,19 @@ if (!doesUserHavePermission("manage_items")) {
 
                     // Checks if the query was successful
                     if (!$insertNewItemResult) {
+
                         mysqli_rollback($link);
-                        echo "Ocorreu um erro na Inserção de dados: " . mysqli_error($link);
+
+                        echo "<div class='error-div'>
+                                <strong class='list' >Ocorreu um erro na Inserção de dados: " . mysqli_error($link) . "</strong>
+                              </div>";
+
                         voltar_atras();
+
                     } else {
-                        echo "<p>Inseriu os dados de novo item com sucesso.</p>
+                        echo "<div class='contorno'>
+                                <b class='success'>Inseriu os dados de novo item com sucesso.</b>
+                              </div>
                               <table class='content-table'>
                                     <tr>
                                         <th>id</th>
@@ -79,21 +92,29 @@ if (!doesUserHavePermission("manage_items")) {
                               </table>
                               <p>Clique em <strong>Continuar</strong> para avançar</p>
                               <a href='$current_page'><button>Continuar</button></a>";
+
                         // Commit the transaction
                         mysqli_commit($link);
+
                         $_SESSION["itemAdded"] = true;
                     }
                 } // Checks if item was added already so to not cause duplication when refreshing the page
                 else if ($_SESSION["itemAdded"]) {
+
                     echo "<div class='error-div'>
                             <strong class='list'>O item já foi inserido</strong>
                           </div>
                           <a href='$current_page'><button>Continuar</button></a>";
-                } else {
+
+                } // If it didn't pass all the other checks it means an error occurred
+                else {
+
                     echo "<div class='error-div'>
                             <strong class='list' >Ocorreu um erro na Inserção de dados: " . mysqli_error($link) . "</strong>
                           </div>";
+
                     voltar_atras();
+
                 }
             }
         }
@@ -116,7 +137,11 @@ if (!doesUserHavePermission("manage_items")) {
         $itemTypeData = mysqli_query($link, $itemTypeQuery);
         // Check if query was successful
         if (!$itemTypeData) {
-            echo "Ocorreu um erro na consulta:" . mysqli_error($link);
+
+            echo "<div class='error-div'>
+                    <strong class='list' >Ocorreu um erro na consulta:" . mysqli_error($link) . "</strong>
+                  </div>";
+
         } else {
             while ($itemType = mysqli_fetch_assoc($itemTypeData)) {
                 // Query to fetch all the items that are linked with the current item_type
@@ -189,7 +214,7 @@ if (!doesUserHavePermission("manage_items")) {
 
         // Hidden input to specify which state of the page im in
         echo "<input type='hidden' name='estado' value='inserir'>
-          <hr><button type='submit'>Inserir item</button>";
+          <hr><button type='submit'>Inserir item</button></form>";
 
         // Initialize the session variable to be able to check if item was already added to DB or not
         $_SESSION["itemAdded"] = false;
