@@ -63,7 +63,7 @@
   background-color: #007d63;
   box-shadow: rgba(45, 188, 100, 0.35) 0 -25px 18px -14px inset,
     rgba(45, 188, 100, 0.25) 0 1px 2px, rgba(45, 188, 100, 0.25) 0 2px 4px,
-    rgba(45, 188, 100, 0.25) 0 4px 8px, rgba(45, 188, 100, 0.25) 0 8px 16px0,
+    rgba(45, 188, 100, 0.25) 0 4px 8px, rgba(45, 188, 100, 0.25) 0 8px 16px,
     rgba(45, 188, 100, 0.25) 0 16px 32px;
   transform: scale(1.05) rotate(-1deg);
 }
@@ -88,25 +88,25 @@
 }
 select {
   width: 100%;
-  padding: 16px 20px;
+  padding: 5px 20px;
   border: none;
   border-radius: 4px;
   background-color: #f1f1f1;
 }
+
 input[type="text"] {
-  border-radius: 50%;
+  border-radius: 1em;
   border: 2px solid red;
   width: 100%;
-  padding: 12px 20px;
-  margin: 8px 0;
+  padding: 5px 20px;
   box-sizing: border-box;
 }
-.container input {
+
+label >input[type="radio"] {
   position: absolute;
   opacity: 0;
   cursor: pointer;
-  height: 0;
-  width: 0;
+  top: 0;
 }
 
 /* Create a custom radio button */
@@ -116,12 +116,23 @@ input[type="text"] {
   left: 0;
   height: 25px;
   width: 25px;
-  background-color: #eee;
-  border-radius: 50%;
+  /*background-color: #eee;*/
+  background-color: #fff;
+  border: 1px solid #ccc;
+  /*border-radius: 50%;*/
+  border-radius: 4px;
+}
+
+.checkBox {
+  display: block;
+  margin-bottom: 10px;
+  position: relative;
+  padding-left: 30px; /* Space for the check mark */
+  cursor: pointer;
 }
 
 /* On mouse-over, add a grey background color */
-.container:hover input ~ .checkmark {
+.checkmark:hover {
   background-color: #ccc;
 }
 
@@ -140,14 +151,20 @@ input[type="text"] {
 /* Show the indicator (dot/circle) when checked */
 .container input:checked ~ .checkmark:after {
   display: block;
+  text-align: center;
 }
 
 /* Style the indicator (dot/circle) */
 .container .checkmark:after {
-  top: 9px;
-  left: 9px;
   width: 8px;
   height: 8px;
   border-radius: 50%;
   background: white;
+  vertical-align: center;
+}
+
+.container .checkmark{
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }

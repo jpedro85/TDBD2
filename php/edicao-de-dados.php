@@ -35,24 +35,35 @@ if (arrayKeysExists(["estado", "tipo", "id"], $_REQUEST) && checkKeysValues(["es
                 $updateItemResult = mysqli_query($link, $updateItemQuery);
                 // checking whether the query was successful or not
                 if (!$updateItemResult) {
+
                     mysqli_rollback($link);
-                    echo "Ocorreu um erro na Atualização de dados nao conseguiu iniciar: " . mysqli_error($link);
+
+                    echo "<div class='error-div'>
+                           <strong class='list' >Ocorreu um erro na Atualização de dados: " . mysqli_error($link) . "</strong>
+                          </div>";
+
                     voltar_atras();
                 } else {
 
                     echo "<p>Atualizações realizadas com sucesso</p>
                           <p>Clique em continuar para voltar a pagina de gestao de itens</p>
-                          <hr><a href='" . get_site_url() . "/gestao-de-itens'><button class=''>Continuar</button></a>";
+                          <hr><a href='" . get_site_url() . "/gestao-de-itens'><button class='button-33'>Continuar</button></a>";
                     // Commit the transaction
                     mysqli_commit($link);
                     $_SESSION["itemUpdated"] = true;
                 }
             }// Checking if the item was already updated
             elseif ($_SESSION["itemUpdated"]) {
-                echo "Os dados ja foram atualizados
-                    <a href='" . get_site_url() . "/gestao-de-itens'><button class=''>Continuar</button></a>";
+                echo "<div class='error-div'>
+                         <b class='list'>Os dados ja foram atualizados</b>
+                      </div>
+                        <a href='" . get_site_url() . "/gestao-de-itens'><button class='button-33'>Continuar</button></a>";
             } else {
-                echo "Ocorreu um erro na Atualização de dados: " . mysqli_error($link);
+
+                echo "<div class='error-div'>
+                        <strong class='list' >Ocorreu um erro na Atualização de dados: " . mysqli_error($link) . "</strong>
+                      </div>";
+
                 voltar_atras();
             }
         }
@@ -75,7 +86,11 @@ if (arrayKeysExists(["estado", "tipo", "id"], $_REQUEST) && checkKeysValues(["es
 
         // Checking if the query was successful
         if (!$itemQueryResult) {
-            echo "Ocorreu um erro na consulta:" . mysqli_error($link);
+
+            echo "<div class='error-div'>
+                    <strong class='list' >Ocorreu um erro na consulta:" . mysqli_error($link) . "</strong>
+                  </div>";
+
             voltar_atras();
         } else {
             $itemData = mysqli_fetch_assoc($itemQueryResult);
@@ -85,8 +100,13 @@ if (arrayKeysExists(["estado", "tipo", "id"], $_REQUEST) && checkKeysValues(["es
             $itemTypeQueryResult = mysqli_query($link, $itemTypeQuery);
 
             if (!$itemTypeQueryResult) {
-                echo "Ocorreu um erro na consulta:" . mysqli_error($link);
+
+                echo "<div class='error-div'>
+                    <strong class='list' >Ocorreu um erro na consulta:" . mysqli_error($link) . "</strong>
+                  </div>";
+
                 voltar_atras();
+
             } else {
 
                 // Starting to format the dropdown
@@ -112,7 +132,7 @@ if (arrayKeysExists(["estado", "tipo", "id"], $_REQUEST) && checkKeysValues(["es
                 </table>
                 <input type='hidden' name='updateState' value='updating'>
                 <p>Clique em <strong>Submeter</strong> para atualizar os dados</p>
-                <hr><button type='submit'>Submeter</button></form>";
+                <hr><button class='button-33' type='submit'>Submeter</button></form>";
 
                 voltar_atras();
 
@@ -146,13 +166,17 @@ if (arrayKeysExists(["estado", "tipo", "id"], $_REQUEST) && checkKeysValues(["es
                 // checking whether the query was successful or not
                 if (!$updateItemResult) {
                     mysqli_rollback($link);
-                    echo "Ocorreu um erro na Atualização de dados nao conseguiu iniciar: " . mysqli_error($link);
+
+                    echo "<div class='error-div'>
+                           <strong class='list' >Ocorreu um erro na Atualização de dados: " . mysqli_error($link) . "</strong>
+                          </div>";
+
                     voltar_atras();
                 } else {
 
                     echo "<p>Atualização realizada com sucesso</p>
                           <p>Clique em continuar para voltar a pagina de gestao de itens</p>
-                          <hr><a href='" . get_site_url() . "/gestao-de-itens'><button class=''>Continuar</button></a>";
+                          <hr><a href='" . get_site_url() . "/gestao-de-itens'><button class='button-33'>Continuar</button></a>";
 
                     // Commit the transaction
                     mysqli_commit($link);
@@ -160,10 +184,16 @@ if (arrayKeysExists(["estado", "tipo", "id"], $_REQUEST) && checkKeysValues(["es
                 }
             }// Checking if the item was already updated
             else if ($_SESSION["itemUpdated"]) {
-                echo "Os dados ja foram atualizados
-                    <a href='" . get_site_url() . "/gestao-de-itens'><button class=''>Continuar</button></a>";
+                echo "<div class='error-div'>
+                         <b class='list'>Os dados ja foram atualizados</b>
+                      </div>
+                    <a href='" . get_site_url() . "/gestao-de-itens'><button class='button-33'>Continuar</button></a>";
             } else {
-                echo "Ocorreu um erro na Atualização de dados: " . mysqli_error($link);
+
+                echo "<div class='error-div'>
+                        <strong class='list' >Ocorreu um erro na Atualização de dados: " . mysqli_error($link) . "</strong>
+                      </div>";
+
                 voltar_atras();
             }
         }
@@ -184,7 +214,11 @@ if (arrayKeysExists(["estado", "tipo", "id"], $_REQUEST) && checkKeysValues(["es
         $itemQueryResult = mysqli_query($link, $itemQuery);
 
         if (!$itemQueryResult) {
-            echo "Ocorreu um erro na consulta:" . mysqli_error($link);
+
+            echo "<div class='error-div'>
+                    <strong class='list' >Ocorreu um erro na consulta:" . mysqli_error($link) . "</strong>
+                  </div>";
+
             voltar_atras();
         } else {
 
@@ -204,7 +238,7 @@ if (arrayKeysExists(["estado", "tipo", "id"], $_REQUEST) && checkKeysValues(["es
             <input type='hidden' name='state' value='active'>
             <input type='hidden' name='updateState' value='activating'>
             <p>Clique em <strong>Submeter</strong> para atualizar os dados</p>
-            <hr><button type='submit'>Submeter</button></form>";
+            <hr><button class='button-33' type='submit'>Submeter</button></form>";
 
             voltar_atras();
 
@@ -239,13 +273,17 @@ else if (arrayKeysExists(["estado", "tipo", "id"], $_REQUEST) && checkKeysValues
                 // checking whether the query was successful or not
                 if (!$updateItemResult) {
                     mysqli_rollback($link);
-                    echo "Ocorreu um erro na Atualização de dados nao conseguiu iniciar: " . mysqli_error($link);
+
+                    echo "<div class='error-div'>
+                           <strong class='list' >Ocorreu um erro na Atualização de dados: " . mysqli_error($link) . "</strong>
+                          </div>";
+
                     voltar_atras();
                 } else {
 
                     echo "<p>Atualização realizada com sucesso</p>
                           <p>Clique em continuar para voltar a pagina de gestao de itens</p>
-                          <hr><a href='" . get_site_url() . "/gestao-de-itens'><button class=''>Continuar</button></a>";
+                          <hr><a href='" . get_site_url() . "/gestao-de-itens'><button class='button-33'>Continuar</button></a>";
 
                     // Commit the transaction
                     mysqli_commit($link);
@@ -253,10 +291,16 @@ else if (arrayKeysExists(["estado", "tipo", "id"], $_REQUEST) && checkKeysValues
                 }
             }// Checking if the item was already updated
             else if ($_SESSION["itemUpdated"]) {
-                echo "Os dados ja foram atualizados
-                    <a href='" . get_site_url() . "/gestao-de-itens'><button class=''>Continuar</button></a>";
+                echo "<div class='error-div'>
+                         <b class='list'>Os dados ja foram atualizados</b>
+                      </div>
+                    <a href='" . get_site_url() . "/gestao-de-itens'><button class='button-33'>Continuar</button></a>";
             } else {
-                echo "Ocorreu um erro na Atualização de dados: " . mysqli_error($link);
+
+                echo "<div class='error-div'>
+                        <strong class='list' >Ocorreu um erro na Atualização de dados: " . mysqli_error($link) . "</strong>
+                      </div>";
+
                 voltar_atras();
             }
         }
@@ -277,7 +321,11 @@ else if (arrayKeysExists(["estado", "tipo", "id"], $_REQUEST) && checkKeysValues
         $itemQuery = "SELECT item.name AS itemName,item.item_type_id AS typeId , item.state FROM item WHERE item.id = {$_REQUEST["id"]}";
         $itemQueryResult = mysqli_query($link, $itemQuery);
         if (!$itemQueryResult) {
-            echo "Ocorreu um erro na consulta:" . mysqli_error($link);
+
+            echo "<div class='error-div'>
+                    <strong class='list' >Ocorreu um erro na consulta:" . mysqli_error($link) . "</strong>
+                  </div>";
+
             voltar_atras();
         } else {
 
@@ -297,7 +345,7 @@ else if (arrayKeysExists(["estado", "tipo", "id"], $_REQUEST) && checkKeysValues
             <input type='hidden' name='state' value='inactive'>
             <input type='hidden' name='updateState' value='deactivating'>
             <p>Clique em <strong>Submeter</strong> para atualizar os dados</p>
-            <hr><button type='submit'>Submeter</button></form>";
+            <hr><button class='button-33' type='submit'>Submeter</button></form>";
 
             voltar_atras();
 
@@ -315,13 +363,17 @@ else if (arrayKeysExists(["estado", "tipo", "id"], $_REQUEST) && checkKeysValues
             // checking whether the query was successful or not
             if (!$deleteItemResult) {
                 mysqli_rollback($link);
-                echo "Ocorreu um erro na Atualização de dados nao conseguiu iniciar: " . mysqli_error($link);
+
+                echo "<div class='error-div'>
+                           <strong class='list' >Ocorreu um erro na Atualização de dados: " . mysqli_error($link) . "</strong>
+                          </div>";
+
                 voltar_atras();
             } else {
 
                 echo "<p>Eliminições realizadas com sucesso</p>
                           <p>Clique em continuar para voltar a pagina de gestao de itens</p>
-                          <hr><a href='" . get_site_url() . "/gestao-de-itens'><button class=''>Continuar</button></a>";
+                          <hr><a href='" . get_site_url() . "/gestao-de-itens'><button class='button-33'>Continuar</button></a>";
 
                 // Commit the transaction
                 mysqli_commit($link);
@@ -329,10 +381,16 @@ else if (arrayKeysExists(["estado", "tipo", "id"], $_REQUEST) && checkKeysValues
             }
         }// Checking if the item was already updated
         else if ($_SESSION["itemUpdated"]) {
-            echo "Os dados ja foram atualizados
-                    <a href='" . get_site_url() . "/gestao-de-itens'><button class=''>Continuar</button></a>";
+            echo "<div class='error-div'>
+                    <b class='list'>Os dados ja foram atualizados</b>
+                  </div>
+                    <a href='" . get_site_url() . "/gestao-de-itens'><button class='button-33'>Continuar</button></a>";
         } else {
-            echo "Ocorreu um erro na Atualização de dados: " . mysqli_error($link);
+
+            echo "<div class='error-div'>
+                    <strong class='list' >Ocorreu um erro na Atualização de dados: " . mysqli_error($link) . "</strong>
+                  </div>";
+
             voltar_atras();
         }
     } else {
@@ -352,7 +410,11 @@ else if (arrayKeysExists(["estado", "tipo", "id"], $_REQUEST) && checkKeysValues
         $itemQueryResult = mysqli_query($link, $itemQuery);
 
         if (!$itemQueryResult) {
-            echo "Ocorreu um erro na consulta:" . mysqli_error($link);
+
+            echo "<div class='error-div'>
+                    <strong class='list' >Ocorreu um erro na consulta:" . mysqli_error($link) . "</strong>
+                  </div>";
+
             voltar_atras();
         } else {
 
@@ -371,7 +433,7 @@ else if (arrayKeysExists(["estado", "tipo", "id"], $_REQUEST) && checkKeysValues
             <form method='post' action='" . get_permalink() . basename($_SERVER["REQUEST_URI"]) . "'>
             <input type='hidden' name='updateState' value='deleting'>
             <p>Clique em <strong>Submeter</strong> para apagar os dados</p>
-            <hr><button type='submit'>Submeter</button></form>";
+            <hr><button class='button-33' type='submit'>Submeter</button></form>";
 
             voltar_atras();
 
@@ -379,7 +441,7 @@ else if (arrayKeysExists(["estado", "tipo", "id"], $_REQUEST) && checkKeysValues
 
         }
     }
-}else if (arrayKeysExists(["estado", "tipo", "id"], $_REQUEST) && checkKeysValues(["estado", "tipo"], $_REQUEST, ["editar", "valor_permitido"])) {
+} else if (arrayKeysExists(["estado", "tipo", "id"], $_REQUEST) && checkKeysValues(["estado", "tipo"], $_REQUEST, ["editar", "valor_permitido"])) {
     // checking if the item is going to be updated or not
     if (array_key_exists("updateState", $_REQUEST) && $_REQUEST["updateState"] == "updating") {
 
@@ -414,23 +476,33 @@ else if (arrayKeysExists(["estado", "tipo", "id"], $_REQUEST) && checkKeysValues
                 // checking whether the query was successful or not
                 if (!$updateAllowedValueResult) {
                     mysqli_rollback($link);
-                    echo "Ocorreu um erro na Atualização de dados nao conseguiu iniciar: " . mysqli_error($link);
+
+                    echo "<div class='error-div'>
+                           <strong class='list' >Ocorreu um erro na Atualização de dados: " . mysqli_error($link) . "</strong>
+                          </div>";
+
                     voltar_atras();
                 } else {
 
                     echo "<p>Atualizações realizadas com sucesso</p>
                           <p>Clique em continuar para voltar a pagina de gestao de valores permitidos</p>
-                          <hr><a href='" . get_site_url() . "/gestao-de-valores-permitidos'><button class=''>Continuar</button></a>";
+                          <hr><a href='" . get_site_url() . "/gestao-de-valores-permitidos'><button class='button-33'>Continuar</button></a>";
                     // Commit the transaction
                     mysqli_commit($link);
                     $_SESSION["allowedValueUpdated"] = true;
                 }
             }// Checking if the item was already updated
             elseif ($_SESSION["allowedValueUpdated"]) {
-                echo "Os dados ja foram atualizados
-                    <a href='" . get_site_url() . "/gestao-de-valores-permitidos'><button class=''>Continuar</button></a>";
+                echo "<div class='error-div'>
+                         <b class='list'>Os dados ja foram atualizados</b>
+                      </div>
+                    <a href='" . get_site_url() . "/gestao-de-valores-permitidos'><button class='button-33'>Continuar</button></a>";
             } else {
-                echo "Ocorreu um erro na Atualização de dados: " . mysqli_error($link);
+
+                echo "<div class='error-div'>
+                        <strong class='list' >Ocorreu um erro na Atualização de dados: " . mysqli_error($link) . "</strong>
+                      </div>";
+
                 voltar_atras();
             }
         }
@@ -453,7 +525,11 @@ else if (arrayKeysExists(["estado", "tipo", "id"], $_REQUEST) && checkKeysValues
 
         // Checking if the query was successful
         if (!$allowedValueQueryResult) {
-            echo "Ocorreu um erro na consulta:" . mysqli_error($link);
+
+            echo "<div class='error-div'>
+                    <strong class='list' >Ocorreu um erro na consulta:" . mysqli_error($link) . "</strong>
+                  </div>";
+
             voltar_atras();
         } else {
             $allowedValueData = mysqli_fetch_assoc($allowedValueQueryResult);
@@ -464,7 +540,11 @@ else if (arrayKeysExists(["estado", "tipo", "id"], $_REQUEST) && checkKeysValues
 
             // Checking if the query was successful
             if (!$subItemQueryResult) {
-                echo "Ocorreu um erro na consulta:" . mysqli_error($link);
+
+                echo "<div class='error-div'>
+                    <strong class='list' >Ocorreu um erro na consulta:" . mysqli_error($link) . "</strong>
+                  </div>";
+
                 voltar_atras();
             } else {
 
@@ -491,7 +571,7 @@ else if (arrayKeysExists(["estado", "tipo", "id"], $_REQUEST) && checkKeysValues
                 </table>
                 <input type='hidden' name='updateState' value='updating'>
                 <p>Clique em <strong>Submeter</strong> para atualizar os dados</p>
-                <hr><button type='submit'>Submeter</button></form>";
+                <hr><button class='button-33' type='submit'>Submeter</button></form>";
 
                 voltar_atras();
 
@@ -524,13 +604,17 @@ else if (arrayKeysExists(["estado", "tipo", "id"], $_REQUEST) && checkKeysValues
                 // checking whether the query was successful or not
                 if (!$updateAllowedValueQueryResult) {
                     mysqli_rollback($link);
-                    echo "Ocorreu um erro na Atualização de dados nao conseguiu iniciar: " . mysqli_error($link);
+
+                    echo "<div class='error-div'>
+                           <strong class='list' >Ocorreu um erro na Atualização de dados: " . mysqli_error($link) . "</strong>
+                          </div>";
+
                     voltar_atras();
                 } else {
 
                     echo "<p>Atualização realizada com sucesso</p>
                           <p>Clique em continuar para voltar a pagina de gestao de valores permitidos</p>
-                          <hr><a href='" . get_site_url() . "/gestao-de-valores-permitidos'><button class=''>Continuar</button></a>";
+                          <hr><a href='" . get_site_url() . "/gestao-de-valores-permitidos'><button class='button-33'>Continuar</button></a>";
 
                     // Commit the transaction
                     mysqli_commit($link);
@@ -538,10 +622,16 @@ else if (arrayKeysExists(["estado", "tipo", "id"], $_REQUEST) && checkKeysValues
                 }
             }// Checking if the item was already updated
             else if ($_SESSION["allowedValueUpdated"]) {
-                echo "Os dados ja foram atualizados
-                    <a href='" . get_site_url() . "/gestao-de-valores-permitidos'><button class=''>Continuar</button></a>";
+                echo "<div class='error-div'>
+                         <b class='list'>Os dados ja foram atualizados</b>
+                      </div>
+                    <a href='" . get_site_url() . "/gestao-de-valores-permitidos'><button class='button-33'>Continuar</button></a>";
             } else {
-                echo "Ocorreu um erro na Atualização de dados: " . mysqli_error($link);
+
+                echo "<div class='error-div'>
+                        <strong class='list' >Ocorreu um erro na Atualização de dados: " . mysqli_error($link) . "</strong>
+                      </div>";
+
                 voltar_atras();
             }
         }
@@ -562,7 +652,11 @@ else if (arrayKeysExists(["estado", "tipo", "id"], $_REQUEST) && checkKeysValues
         $allowedValueQueryResult = mysqli_query($link, $allowedValueQuery);
 
         if (!$allowedValueQueryResult) {
-            echo "Ocorreu um erro na consulta:" . mysqli_error($link);
+
+            echo "<div class='error-div'>
+                    <strong class='list' >Ocorreu um erro na consulta:" . mysqli_error($link) . "</strong>
+                  </div>";
+
             voltar_atras();
         } else {
 
@@ -582,7 +676,7 @@ else if (arrayKeysExists(["estado", "tipo", "id"], $_REQUEST) && checkKeysValues
             <input type='hidden' name='state' value='active'>
             <input type='hidden' name='updateState' value='activating'>
             <p>Clique em <strong>Submeter</strong> para atualizar os dados</p>
-            <hr><button type='submit'>Submeter</button></form>";
+            <hr><button class='button-33' type='submit'>Submeter</button></form>";
 
             voltar_atras();
 
@@ -607,8 +701,7 @@ else if (arrayKeysExists(["estado", "tipo", "id"], $_REQUEST) && checkKeysValues
         if (!$validForm) {
             echo $invalidFields;
             voltar_atras();
-        }
-        // if there were no problems update the database
+        } // if there were no problems update the database
         else {
             if (!$_SESSION["allowedValueUpdated"] && mysqli_begin_transaction($link)) {
 
@@ -619,13 +712,17 @@ else if (arrayKeysExists(["estado", "tipo", "id"], $_REQUEST) && checkKeysValues
                 // checking whether the query was successful or not
                 if (!$updateAllowedValueQuery) {
                     mysqli_rollback($link);
-                    echo "Ocorreu um erro na Atualização de dados nao conseguiu iniciar: " . mysqli_error($link);
+
+                    echo "<div class='error-div'>
+                           <strong class='list' >Ocorreu um erro na Atualização de dados: " . mysqli_error($link) . "</strong>
+                          </div>";
+
                     voltar_atras();
                 } else {
 
                     echo "<p>Atualização realizada com sucesso</p>
                           <p>Clique em continuar para voltar a pagina de gestao de itens</p>
-                          <hr><a href='" . get_site_url() . "/gestao-de-valores-permitidos'><button class=''>Continuar</button></a>";
+                          <hr><a href='" . get_site_url() . "/gestao-de-valores-permitidos'><button class='button-33'>Continuar</button></a>";
 
                     // Commit the transaction
                     mysqli_commit($link);
@@ -633,10 +730,16 @@ else if (arrayKeysExists(["estado", "tipo", "id"], $_REQUEST) && checkKeysValues
                 }
             }// Checking if the item was already updated
             else if ($_SESSION["allowedValueUpdated"]) {
-                echo "Os dados ja foram atualizados
-                    <a href='" . get_site_url() . "/gestao-de-valores-permitidos'><button class=''>Continuar</button></a>";
+                echo "<div class='error-div'>
+                         <b class='list'>Os dados ja foram atualizados</b>
+                      </div>
+                    <a href='" . get_site_url() . "/gestao-de-valores-permitidos'><button class='button-33'>Continuar</button></a>";
             } else {
-                echo "Ocorreu um erro na Atualização de dados: " . mysqli_error($link);
+
+                echo "<div class='error-div'>
+                        <strong class='list' >Ocorreu um erro na Atualização de dados: " . mysqli_error($link) . "</strong>
+                      </div>";
+
                 voltar_atras();
             }
         }
@@ -658,7 +761,11 @@ else if (arrayKeysExists(["estado", "tipo", "id"], $_REQUEST) && checkKeysValues
         $allowedValueQueryResult = mysqli_query($link, $allowedValueQuery);
 
         if (!$allowedValueQueryResult) {
-            echo "Ocorreu um erro na consulta:" . mysqli_error($link);
+
+            echo "<div class='error-div'>
+                    <strong class='list' >Ocorreu um erro na consulta:" . mysqli_error($link) . "</strong>
+                  </div>";
+
             voltar_atras();
         } else {
 
@@ -678,7 +785,7 @@ else if (arrayKeysExists(["estado", "tipo", "id"], $_REQUEST) && checkKeysValues
             <input type='hidden' name='state' value='inactive'>
             <input type='hidden' name='updateState' value='deactivating'>
             <p>Clique em <strong>Submeter</strong> para atualizar os dados</p>
-            <hr><button type='submit'>Submeter</button>";
+            <hr><button class='button-33' type='submit'>Submeter</button>";
 
             $_SESSION["allowedValueUpdated"] = false;
 
@@ -694,13 +801,17 @@ else if (arrayKeysExists(["estado", "tipo", "id"], $_REQUEST) && checkKeysValues
             // checking whether the query was successful or not
             if (!$deleteAllowedValueQuery) {
                 mysqli_rollback($link);
-                echo "Ocorreu um erro na Atualização de dados nao conseguiu iniciar: " . mysqli_error($link);
+
+                echo "<div class='error-div'>
+                           <strong class='list' >Ocorreu um erro na Atualização de dados: " . mysqli_error($link) . "</strong>
+                          </div>";
+
                 voltar_atras();
             } else {
 
                 echo "<p>Eliminições realizadas com sucesso</p>
                           <p>Clique em continuar para voltar a pagina de gestao de itens</p>
-                          <hr><a href='" . get_site_url() . "/gestao-de-valores-permitidos'><button class=''>Continuar</button></a>";
+                          <hr><a href='" . get_site_url() . "/gestao-de-valores-permitidos'><button class='button-33'>Continuar</button></a>";
 
                 // Commit the transaction
                 mysqli_commit($link);
@@ -708,49 +819,59 @@ else if (arrayKeysExists(["estado", "tipo", "id"], $_REQUEST) && checkKeysValues
             }
         }// Checking if the item was already updated
         else if ($_SESSION["allowedValueUpdated"]) {
-            echo "Os dados ja foram atualizados
-                    <a href='" . get_site_url() . "/gestao-de-valores-permitidos'><button class=''>Continuar</button></a>";
+            echo "<div class='error-div'>
+                    <b class='list'>Os dados ja foram atualizados</b>
+                  </div>
+                    <a href='" . get_site_url() . "/gestao-de-valores-permitidos'><button class='button-33'>Continuar</button></a>";
         } else {
-            echo "Ocorreu um erro na Atualização de dados: " . mysqli_error($link);
+
+            echo "<div class='error-div'>
+                        <strong class='list' >Ocorreu um erro na Atualização de dados: " . mysqli_error($link) . "</strong>
+                  </div>";
+
             voltar_atras();
         }
     } else {
-        echo "<strong>Estamos prestes a apagar os dados abaixo da base de dados. Confirma que pertende apagar os mesmos?</strong>
-          <table class='content-table'>
-          <thead>
-            <tr>
-                <th>id</th>
-                <th>subitem_id</th>
-                <th>value</th>
-                <th>state</th>
-            </tr>
-          </thead>";
+        echo " < strong>Estamos prestes a apagar os dados abaixo da base de dados . Confirma que pertende apagar os mesmos ?</strong >
+          <table class='content-table' >
+          <thead >
+            <tr >
+                <th > id</th >
+                <th > subitem_id</th >
+                <th > value</th >
+                <th > state</th >
+            </tr >
+          </thead > ";
 
         // Fetching all subitem ids for a dropdown box so that we can choose the id more easily without needing mental mapping of the database
-        $allowedValueQuery = "SELECT subitem_allowed_value.subitem_id AS subId,subitem_allowed_value.value , subitem_allowed_value.state FROM subitem_allowed_value WHERE subitem_allowed_value.id = {$_REQUEST["id"]}";
+        $allowedValueQuery = "SELECT subitem_allowed_value . subitem_id as subId,subitem_allowed_value . value , subitem_allowed_value . state FROM subitem_allowed_value WHERE subitem_allowed_value.id = {$_REQUEST["id"]}";
         $allowedValueQueryResult = mysqli_query($link, $allowedValueQuery);
 
         if (!$allowedValueQueryResult) {
-            echo "Ocorreu um erro na consulta:" . mysqli_error($link);
+
+            echo "<div class='error-div'>
+                    <strong class='list' >Ocorreu um erro na consulta:" . mysqli_error($link) . "</strong>
+                  </div>";
+
             voltar_atras();
         } else {
 
             $allowedValueData = mysqli_fetch_assoc($allowedValueQueryResult);
 
             echo "
-            <tbody>
-                <tr>
-                    <td><strong>{$_REQUEST["id"]}</strong></td>
-                    <td><strong>{$allowedValueData["subId"]}</strong></td>
-                    <td><strong>{$allowedValueData["value"]}</strong></td>
-                    <td><strong>{$allowedValueData["state"]}</strong></td>
-                </tr>
-            </tbody>
-            </table>
-            <form method='post' action='" . get_permalink() . basename($_SERVER["REQUEST_URI"]) . "'>
-            <input type='hidden' name='updateState' value='deleting'>
-            <p>Clique em <strong>Submeter</strong> para apagar os dados</p>
-            <hr><button type='submit'>Submeter</button></form>";
+            < tbody>
+                <tr >
+                    <td ><strong >{$_REQUEST["id"]}</strong ></td >
+                    <td ><strong >{$allowedValueData["subId"]}</strong ></td >
+                    <td ><strong >{$allowedValueData["value"]}</strong ></td >
+                    <td ><strong >{$allowedValueData["state"]}</strong ></td >
+                </tr >
+            </tbody >
+            </table >
+            <form method = 'post' action = '" . get_permalink() . basename($_SERVER["REQUEST_URI"]) . "' >
+            <input type = 'hidden' name = 'updateState' value = 'deleting' >
+            <p > Clique em < strong>Submeter </strong > para apagar os dados </p >
+            <hr ><button class='button-33' type = 'submit' > Submeter</button ></form > ";
 
             voltar_atras();
 

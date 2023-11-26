@@ -77,21 +77,25 @@ if (!doesUserHavePermission("manage_items")) {
                                 <b class='success'>Inseriu os dados de novo item com sucesso.</b>
                               </div>
                               <table class='content-table'>
-                                    <tr>
-                                        <th>id</th>
-                                        <th>Nome</th>
-                                        <th>Item Type id</th>
-                                        <th>Estado</th>
-                                    </tr> 
-                                    <tr>
-                                        <td>" . mysqli_insert_id($link) . "</td>
-                                        <td>$itemName</td>
-                                        <td>{$_REQUEST["typeName"]}</td>
-                                        <td>{$_REQUEST["state"]}</td>
-                                    </tr> 
+                                    <thead>
+                                        <tr>
+                                            <th>id</th>
+                                            <th>Nome</th>
+                                            <th>Item Type id</th>
+                                            <th>Estado</th>
+                                        </tr> 
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>" . mysqli_insert_id($link) . "</td>
+                                            <td>$itemName</td>
+                                            <td>{$_REQUEST["typeName"]}</td>
+                                            <td>{$_REQUEST["state"]}</td>
+                                        </tr> 
+                                    </tbody>
                               </table>
                               <p>Clique em <strong>Continuar</strong> para avançar</p>
-                              <a href='$current_page'><button>Continuar</button></a>";
+                              <a href='$current_page'><button class='button-33'>Continuar</button></a>";
 
                         // Commit the transaction
                         mysqli_commit($link);
@@ -104,7 +108,7 @@ if (!doesUserHavePermission("manage_items")) {
                     echo "<div class='error-div'>
                             <strong class='list'>O item já foi inserido</strong>
                           </div>
-                          <a href='$current_page'><button>Continuar</button></a>";
+                          <a href='$current_page'><button class='button'>Continuar</button></a>";
 
                 } // If it didn't pass all the other checks it means an error occurred
                 else {
@@ -192,7 +196,7 @@ if (!doesUserHavePermission("manage_items")) {
 
         // Starting the form to be able to create and add new items
         echo "<hr><h3>Gestao de itens - introdução</h3>";
-        echo "<form method='post' action='$current_page'>";
+        echo "<form class='container' method='post' action='$current_page'>";
 
         // The input for the Name of the item and its type
         echo "<h5>Nome do Item</h5>
@@ -202,19 +206,29 @@ if (!doesUserHavePermission("manage_items")) {
         // Reusing the Data fetched before to fill the radio buttons
         $itemType = null;
         foreach ($itemTypeData as $itemType) {
-            echo "<li><input type='radio' name='typeName' id='typeName' value='{$itemType["typeName"]}'>{$itemType["typeName"]}</li>";
+            echo "
+                  <label class='checkBox'>
+                     <input type='radio' name='typeName' value='{$itemType["typeName"]}'>
+                     <span class='checkmark'></span>{$itemType["typeName"]}
+                  </label>
+                  ";
         }
 
         // Input for the item State using the enums from the Database
         echo "<h5>Estado do Item</h5>";
         $itemStateValues = get_enum_values($link, "item", "state");
         foreach ($itemStateValues as $itemState) {
-            echo "<li><input type='radio' name='state' id='state' value='{$itemState}'>{$itemState}</li>";
+            echo "
+                  <label class='checkBox'>
+                     <input type='radio' name='state' id='state' value='{$itemState}'>
+                     <span class='checkmark'></span>{$itemState}
+                  </label>
+                  ";
         }
 
         // Hidden input to specify which state of the page im in
         echo "<input type='hidden' name='estado' value='inserir'>
-          <hr><button type='submit'>Inserir item</button></form>";
+          <hr><button class='button-33' type='submit'>Inserir item</button></form>";
 
         // Initialize the session variable to be able to check if item was already added to DB or not
         $_SESSION["itemAdded"] = false;
