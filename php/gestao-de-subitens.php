@@ -74,7 +74,7 @@ if(!is_user_logged_in() && current_user_can('manage_subitems')){
             // Exibindo mensagem de sucesso e botão para continuar
 
             echo '<li><b class="success">Os dados foram inseridos com sucesso</b><br>Clique em Continuar para AVANÇAR!</li>
-        <a href=' . $current_page . ' ><button>Continuar</button></a>';
+                  <a href=' . $current_page . ' ><button>Continuar</button></a>';
             $NewID=mysqli_insert_id($link);
             $NewFormFName = $tresLetras . "-".$NewID."-" . $_REQUEST["ITname"];
             $updateQuery = "UPDATE subitem SET form_field_name = '" . $NewFormFName . "' WHERE id = " . $NewID;

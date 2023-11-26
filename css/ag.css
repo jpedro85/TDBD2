@@ -77,25 +77,11 @@
     border-radius: 25px;
     background-color: #d3b2b2;
     border: 10px solid #d3b2b2;
-
+    margin: 2em 0;
 }
 
 .list {
-    margin-left: 2em;
+    margin: 0 2em;
     color: rgb(174, 21, 52);
     font-weight: bold;
-}
-
-input[type="text"] {
-    width: 100%;
-    padding: 10px;
-    margin: 10px 0;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-    outline: none;
-}
-
-input[type="text"]:focus {
-    border-color: #007bff;
-    box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
 }

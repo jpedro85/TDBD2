@@ -14,8 +14,8 @@ if (!doesUserHavePermission("manage_allowed_values")) {
         echo "<h5>Nome do Valor Permitido</h5>
               <input type='text' name='value' id='valueName' placeholder='Ex.: fino, ligeiro, moderado, fechadas ...'>
               <input type='hidden' name='estado' value='inserir' >
-              <button type='submit'>Inserir valor permitido</button>";
-        voltar_atras();
+              <button type='submit'>Inserir valor permitido</button>
+              <a href='$current_page'><button>Voltar Atrás</button></a>";
         $_SESSION["valueAdded"] = false;
         $_SESSION["subitemId"] = $_REQUEST["subitem"];
     } else if (array_key_exists("estado", $_REQUEST) && $_REQUEST["estado"] == "inserir") {
@@ -29,11 +29,12 @@ if (!doesUserHavePermission("manage_allowed_values")) {
         // Check allowed value received is empty or just numbers
         if (empty($newAllowedValued) || is_numeric($newAllowedValued)) {
             $validForm = false;
-            $invalidField .= "<p>Nome do valor permitido é inválido</p>";
+            $invalidField .= "<li class='list'>Nome do valor permitido é inválido</li>";
         }
         // Checks if there were any errors in the server side verification
         if (!$validForm) {
-            echo $invalidField;
+            echo "<div class='error-div>$invalidField</div>";
+            voltar_atras();
         } else {
             $insertNewAllowedValueQuery = "INSERT INTO subitem_allowed_value(subitem_id, value, state) VALUES ('{$_SESSION["subitemId"]}', '$newAllowedValued', 'active' )";
 
@@ -46,20 +47,24 @@ if (!doesUserHavePermission("manage_allowed_values")) {
                     echo "Ocorreu um erro na Inserção de dados: " . mysqli_error($link);
                     voltar_atras();
                 } else {
-                    echo "<p>Inseriu os dados de novo valor permitido com sucesso.</p>
-                              <table>
-                                    <tr>
-                                        <th>id</th>
-                                        <th>value</th>
-                                        <th>subitem_id</th>
-                                        <th>state</th>
-                                    </tr> 
-                                    <tr>
-                                        <td>" . mysqli_insert_id($link) . "</td>
-                                        <td> $newAllowedValued</td>
-                                        <td>{$_SESSION["subitemId"]}</td>
-                                        <td>active</td>
-                                    </tr> 
+                    echo "<b class='success'>Inseriu os dados de novo valor permitido com sucesso.</b>
+                              <table class='content-table'>
+                                    <thead>
+                                        <tr>
+                                            <th>id</th>
+                                            <th>value</th>
+                                            <th>subitem_id</th>
+                                            <th>state</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>" . mysqli_insert_id($link) . "</td>
+                                            <td> $newAllowedValued</td>
+                                            <td>{$_SESSION["subitemId"]}</td>
+                                            <td>active</td>
+                                        </tr> 
+                                    </tbody>
                               </table>
                               <p>Clique em <strong>Continuar</strong> para avançar</p>
                               <a href='$current_page'><button>Continuar</button></a>";
@@ -70,13 +75,12 @@ if (!doesUserHavePermission("manage_allowed_values")) {
                 }
             } // Checks if item was added already so to not cause duplication when refreshing the page
             else if ($_SESSION["itemAdded"]) {
-                echo "O valor ja foi inserido";
-                voltar_atras();
+                echo "<a href='$current_page'><button>Continuar</button></a>";
             }
         }
     } else {
         // Initial State if there is no REQUEST["estado"]
-        echo "<table>";
+        echo "<table class='content-table'>";
         echo "<thead>
             <tr>
                 <th>item</th>
@@ -155,13 +159,13 @@ if (!doesUserHavePermission("manage_allowed_values")) {
                                 $allowedValueRows .= "<td>{$allowedValue["state"]}</td>";
 
                                 // Checking whether the current allowedValue state is active or inactive to have the correct action of changing state
-                                $allowedValue["state"] == "active" ? $allowedValueAction = "<a href='$editDataPage?estado=desativar&tipo=valor_permitido&id={$allowedValue["id"]}'>[desativar]</a>" : $allowedValueAction = "<a href='$editDataPage?estado=desativar&tipo=valor_permitido&id={$allowedValue["id"]}'>[ativar]</a>";
+                                $allowedValue["state"] == "active" ? $allowedValueAction = "<a class='links' href='$editDataPage?estado=desativar&tipo=valor_permitido&id={$allowedValue["id"]}'>[desativar]</a>" : $allowedValueAction = "<a class='links' href='$editDataPage?estado=ativar&tipo=valor_permitido&id={$allowedValue["id"]}'>[ativar]</a>";
 
                                 // Formatting last column to have the all actions corresponding to the allowedValue data
                                 $allowedValueRows .= "<td>
-                                    <a href='$editDataPage?estado=editart&tipo=valor_permitido&id={$allowedValue["id"]}'>[editar]</a>
+                                    <a class='links' href='$editDataPage?estado=editar&tipo=valor_permitido&id={$allowedValue["id"]}'>[editar]</a>
                                     {$allowedValueAction}
-                                    <a href='$editDataPage?estado=apagar&tipo=valor_permitido&id={$allowedValue["id"]}'>[apagar]</a>
+                                    <a class='links' href='$editDataPage?estado=apagar&tipo=valor_permitido&id={$allowedValue["id"]}'>[apagar]</a>
                                 </td></tr>";
                             }
                         }
