@@ -74,7 +74,7 @@ function checkFieldExistsOnDatabase($connection, $value, $table, $column)
 function voltar_atras()
 {
 
-    echo "<script type='text/javascript'>document.write(\"<a href='javascript:history.back()'> <button class='' >Voltar Atrás</button> </a>\");</script>
+    echo "<script type='text/javascript'>document.write(\"<a href='javascript:history.back()'> <button class='button-33' >Voltar Atrás</button> </a>\");</script>
     <noscript>
     <a href='" . $_SERVER['HTTP_REFERER'] . "</a>
     </noscript>";
