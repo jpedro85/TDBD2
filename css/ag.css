@@ -1,144 +1,153 @@
 .content-table {
-    border-collapse: collapse;
-    margin: 25px 0;
-    font-size: 0.9em;
-    min-width: 400px;
+  border-collapse: collapse;
+  margin: 25px 0;
+  font-size: 0.9em;
+  min-width: 400px;
 }
-.content-table thead tr {
-    background-color: #009879;
-    color: #ffffff;
-    text-align: center;
-    font-weight: bold;
-}
-.content-table th
-.content-table td {
-    padding: 12px 15px;
-}
-.erro{
-    color: crimson;
-}
-.success{
-    color: chartreuse;
-}
-.content-table tbody tr {
-    border-bottom: 1px solid #dddddd;
-}
-.links{
-    color: #009879;
-}
-.content-table tbody tr:nth-last-of-type(even) {
-    background-color: #f3f3f3;
-}
-.content-table tbody tr:last-of-type {
-    border-bottom: 2px solid #009879
-}
-.button-33 {
-    background-color: #009879;
-    border-radius: 60px;
-    box-shadow: rgba(45, 188, 100, .3) 0 -25px 18px -14px inset, 
-        rgba(45, 188, 100, .16) 0 1px 2px, 
-        rgba(45, 188, 100, .16) 0 2px 4px, 
-        rgba(45, 188, 100, .16) 0 4px 8px, 
-        rgba(45, 188, 100, .15) 0 8px 16px, 
-        rgba(45, 188, 100, .15) 0 16px 32px;
-    color: white;
-    cursor: pointer;
-    display: inline-block;
-    font-family: CerebriSans-Regular, -apple-system, system-ui, Roboto, sans-serif;
-    padding: 7px 20px;
-    text-align: center;
-    text-decoration: none;
-    transition: all 270ms;
-    border: 0;
-    font-size: 17px;
-    user-select: none;
-    -webkit-user-select: none;
-    touch-action: manipulation;
-}
-.button-33:hover {
-    background-color: #007d63;
-    box-shadow: rgba(45, 188, 100, .35) 0 -25px 18px -14px inset, 
-        rgba(45, 188, 100, .25) 0 1px 2px,
-        rgba(45, 188, 100,.25) 0 2px 4px, 
-        rgba(45, 188, 100, .25) 0 4px 8px,
-        rgba(45, 188, 100, .25) 0 8px 16px0, 
-        rgba(45, 188, 100, .25) 0 16px 32px;
-    transform: scale(1.05) rotate(-1deg);
-}
-.contorno{
-    border-radius: 25px;
-    background-color:#b2d3c2;
-    border: 10px solid #b2d3c2;
 
+.content-table thead tr {
+  background-color: #009879;
+  color: #ffffff;
+  text-align: center;
+  font-weight: bold;
 }
-.list{
-    margin-left: 2em;
-    color:  crimson;
-    font-weight: bold;
+
+.content-table th .content-table td {
+  padding: 12px 15px;
+}
+.erro {
+  color: crimson;
+}
+.success {
+  color: chartreuse;
+}
+
+.content-table tbody tr {
+  border-bottom: 1px solid #dddddd;
+}
+.links {
+  color: #009879;
+}
+
+.content-table tbody tr:nth-last-of-type(even) {
+  background-color: #f3f3f3;
+}
+
+.content-table tbody tr:last-of-type {
+  border-bottom: 2px solid #009879;
+}
+
+.button-33 {
+  background-color: #009879;
+  border-radius: 60px;
+  box-shadow: rgba(45, 188, 100, 0.3) 0 -25px 18px -14px inset,
+    rgba(45, 188, 100, 0.16) 0 1px 2px, rgba(45, 188, 100, 0.16) 0 2px 4px,
+    rgba(45, 188, 100, 0.16) 0 4px 8px, rgba(45, 188, 100, 0.15) 0 8px 16px,
+    rgba(45, 188, 100, 0.15) 0 16px 32px;
+  color: white;
+  cursor: pointer;
+  display: inline-block;
+  font-family: CerebriSans-Regular, -apple-system, system-ui, Roboto, sans-serif;
+  padding: 7px 20px;
+  text-align: center;
+  text-decoration: none;
+  transition: all 270ms;
+  border: 0;
+  font-size: 17px;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: manipulation;
+}
+
+.button-33:hover {
+  background-color: #007d63;
+  box-shadow: rgba(45, 188, 100, 0.35) 0 -25px 18px -14px inset,
+    rgba(45, 188, 100, 0.25) 0 1px 2px, rgba(45, 188, 100, 0.25) 0 2px 4px,
+    rgba(45, 188, 100, 0.25) 0 4px 8px, rgba(45, 188, 100, 0.25) 0 8px 16px0,
+    rgba(45, 188, 100, 0.25) 0 16px 32px;
+  transform: scale(1.05) rotate(-1deg);
+}
+
+.contorno {
+  border-radius: 25px;
+  background-color: #b2d3c2;
+  border: 10px solid #b2d3c2;
+}
+
+.error-div {
+  border-radius: 25px;
+  background-color: #d3b2b2;
+  border: 10px solid #d3b2b2;
+  margin: 2em 0;
+}
+
+.list {
+  margin: 0 2em;
+  color: crimson;
+  font-weight: bold;
 }
 select {
-    width: 100%;
-    padding: 16px 20px;
-    border: none;
-    border-radius: 4px;
-    background-color: #f1f1f1;
+  width: 100%;
+  padding: 16px 20px;
+  border: none;
+  border-radius: 4px;
+  background-color: #f1f1f1;
 }
-  input[type=text] {
-    border-radius: 50%;
-    border: 2px solid red;
-    width: 100%;
-    padding: 12px 20px;
-    margin: 8px 0;
-    box-sizing: border-box;
+input[type="text"] {
+  border-radius: 50%;
+  border: 2px solid red;
+  width: 100%;
+  padding: 12px 20px;
+  margin: 8px 0;
+  box-sizing: border-box;
 }
 .container input {
-    position: absolute;
-    opacity: 0;
-    cursor: pointer;
-    height: 0;
-    width: 0;
-  }
-  
-  /* Create a custom radio button */
-  .checkmark {
-    position: absolute;
-    top: 0;
-    left: 0;
-    height: 25px;
-    width: 25px;
-    background-color: #eee;
-    border-radius: 50%;
-  }
-  
-  /* On mouse-over, add a grey background color */
-  .container:hover input ~ .checkmark {
-    background-color: #ccc;
-  }
-  
-  /* When the radio button is checked, add a blue background */
-  .container input:checked ~ .checkmark {
-    background-color: #2196F3;
-  }
-  
-  /* Create the indicator (the dot/circle - hidden when not checked) */
-  .checkmark:after {
-    content: "";
-    position: absolute;
-    display: none;
-  }
-  
-  /* Show the indicator (dot/circle) when checked */
-  .container input:checked ~ .checkmark:after {
-    display: block;
-  }
-  
-  /* Style the indicator (dot/circle) */
-  .container .checkmark:after {
-    top: 9px;
-    left: 9px;
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    background: white;
-  }
-  
+  position: absolute;
+  opacity: 0;
+  cursor: pointer;
+  height: 0;
+  width: 0;
+}
+
+/* Create a custom radio button */
+.checkmark {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 25px;
+  width: 25px;
+  background-color: #eee;
+  border-radius: 50%;
+}
+
+/* On mouse-over, add a grey background color */
+.container:hover input ~ .checkmark {
+  background-color: #ccc;
+}
+
+/* When the radio button is checked, add a blue background */
+.container input:checked ~ .checkmark {
+  background-color: #2196f3;
+}
+
+/* Create the indicator (the dot/circle - hidden when not checked) */
+.checkmark:after {
+  content: "";
+  position: absolute;
+  display: none;
+}
+
+/* Show the indicator (dot/circle) when checked */
+.container input:checked ~ .checkmark:after {
+  display: block;
+}
+
+/* Style the indicator (dot/circle) */
+.container .checkmark:after {
+  top: 9px;
+  left: 9px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: white;
+}

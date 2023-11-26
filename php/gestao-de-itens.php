@@ -1,10 +1,7 @@
 <?php
-// TODO Found bug in css link its custom/ag.css instead of /custom/ag.css on wp-contents/themes/responsive/function.php
 require_once("custom/php/common.php");
-// TODO Css for the popup saying the invalid form inputs
-// TODO CSS for the error in queries
-// TODO Client-Side Verifications
 
+// Checking whether the use has the needed permissions or not
 if (!doesUserHavePermission("manage_items")) {
     echo "Não tem autorização para aceder a esta página";
 } else {
@@ -26,30 +23,35 @@ if (!doesUserHavePermission("manage_items")) {
         // Check itemName received is empty or just numbers
         if (empty($itemName) || is_numeric($itemName)) {
             $validForm = false;
-            $invalidFields .= "<p>Nome do item é invalido</p>";
+            $invalidFields .= "<li class='list'>Nome do item é invalido</li>";
         }
         // Checks whether the item type received is valid or not
         if (empty($typeName) || is_numeric($typeName) || !checkFieldExistsOnDatabase($link, $typeName, "item_type", "name")) {
             $validForm = false;
-            $invalidFields .= "<p>Tipo de item é invalido</p>";
+            $invalidFields .= "<li class='list'>Tipo de item é invalido</li>";
         }
         // Checks whether the item state received was valid or not
         if (empty($_REQUEST["state"]) || !in_array($_REQUEST["state"], $itemStates)) {
             $validForm = false;
-            $invalidFields .= "<p>Estado do item é invalido</p>";
+            $invalidFields .= "<li class='list'>Estado do item é invalido</li>";
         }
         // Checks if there were any errors in the server side verification
         if (!$validForm) {
-            echo $invalidFields;
+            echo "<div class='error-div'>$invalidFields</div>";
             voltar_atras();
         } else {
+
             // Fetch the item type id with same name as
             $itemTypeIdQuery = "SELECT id FROM item_type WHERE name = '{$typeName}'";
             $itemTypeIdResult = mysqli_query($link, $itemTypeIdQuery);
 
             // Checks if the query was successful
             if (!$itemTypeIdResult) {
-                echo "Ocorreu um erro na busca do item_typed id: " . mysqli_error($link);
+
+                echo "<div class='error-div'>
+                        <strong class='list' >Ocorreu um erro na Inserção de dados: " . mysqli_error($link) . "</strong>
+                      </div>";
+
             } else {
                 $itemTypeId = mysqli_fetch_assoc($itemTypeIdResult)["id"];
                 // Start transaction to insert items
@@ -61,12 +63,20 @@ if (!doesUserHavePermission("manage_items")) {
 
                     // Checks if the query was successful
                     if (!$insertNewItemResult) {
+
                         mysqli_rollback($link);
-                        echo "Ocorreu um erro na Inserção de dados: " . mysqli_error($link);
+
+                        echo "<div class='error-div'>
+                                <strong class='list' >Ocorreu um erro na Inserção de dados: " . mysqli_error($link) . "</strong>
+                              </div>";
+
                         voltar_atras();
+
                     } else {
-                        echo "<p>Inseriu os dados de novo item com sucesso.</p>
-                              <table>
+                        echo "<div class='contorno'>
+                                <b class='success'>Inseriu os dados de novo item com sucesso.</b>
+                              </div>
+                              <table class='content-table'>
                                     <tr>
                                         <th>id</th>
                                         <th>Nome</th>
@@ -82,23 +92,35 @@ if (!doesUserHavePermission("manage_items")) {
                               </table>
                               <p>Clique em <strong>Continuar</strong> para avançar</p>
                               <a href='$current_page'><button>Continuar</button></a>";
+
                         // Commit the transaction
                         mysqli_commit($link);
+
                         $_SESSION["itemAdded"] = true;
                     }
                 } // Checks if item was added already so to not cause duplication when refreshing the page
                 else if ($_SESSION["itemAdded"]) {
-                    echo "O item já foi inserido";
+
+                    echo "<div class='error-div'>
+                            <strong class='list'>O item já foi inserido</strong>
+                          </div>
+                          <a href='$current_page'><button>Continuar</button></a>";
+
+                } // If it didn't pass all the other checks it means an error occurred
+                else {
+
+                    echo "<div class='error-div'>
+                            <strong class='list' >Ocorreu um erro na Inserção de dados: " . mysqli_error($link) . "</strong>
+                          </div>";
+
                     voltar_atras();
-                } else {
-                    echo "Ocorreu um erro na Inserção de dados: " . mysqli_error($link);
-                    voltar_atras();
+
                 }
             }
         }
     } else {
         // Initial State if there is no REQUEST["estado"]
-        echo "<table>";
+        echo "<table class='content-table'>";
         echo "<thead>
             <tr>
                 <th>tipo de item</th>
@@ -115,14 +137,21 @@ if (!doesUserHavePermission("manage_items")) {
         $itemTypeData = mysqli_query($link, $itemTypeQuery);
         // Check if query was successful
         if (!$itemTypeData) {
-            echo "Ocorreu um erro na consulta:" . mysqli_error($link);
+
+            echo "<div class='error-div'>
+                    <strong class='list' >Ocorreu um erro na consulta:" . mysqli_error($link) . "</strong>
+                  </div>";
+
         } else {
             while ($itemType = mysqli_fetch_assoc($itemTypeData)) {
                 // Query to fetch all the items that are linked with the current item_type
                 $itemQuery = "SELECT item.id, item.name as itemName, item.state FROM item WHERE item.item_type_id = {$itemType["id"]} ORDER BY item.id ";
                 $itemData = mysqli_query($link, $itemQuery);
                 if (!$itemData) {
-                    echo "Ocorreu um erro na consulta:" . mysqli_error($link);
+                    echo "<div class='error-div'>
+                            <strong class='list' >Ocorreu um erro na consulta:" . mysqli_error($link) . "</strong>
+                          </div>";
+
                 } else {
 
                     // Checks if the item_type actually has items linked to him
@@ -143,13 +172,13 @@ if (!doesUserHavePermission("manage_items")) {
                         $itemTypeRows .= "<td>{$item["state"]}</td>";
 
                         // Checking whether the current item state is active or inactive to have the correct action of changing state
-                        $item["state"] == "active" ? $itemAction = "<a href='$editDataPage?estado=desativar&tipo=item&id={$item["id"]}'>[desativar]</a>" : $itemAction = "<a href='$editDataPage?estado=ativar&tipo=item&id={$item["id"]}'>[ativar]</a>";
+                        $item["state"] == "active" ? $itemAction = "<a class='links' href='$editDataPage?estado=desativar&tipo=item&id={$item["id"]}'>[desativar]</a>" : $itemAction = "<a class='links href='$editDataPage?estado=ativar&tipo=item&id={$item["id"]}'>[ativar]</a>";
 
                         // Formatting last column to have the all actions corresponding to the item data
                         $itemTypeRows .= "<td>
-                                    <a href='$editDataPage?estado=editar&tipo=item&id={$item["id"]}'>[editar]</a>
+                                    <a class='links' href='$editDataPage?estado=editar&tipo=item&id={$item["id"]}'>[editar]</a>
                                     {$itemAction}
-                                    <a href='$editDataPage?estado=apagar&tipo=item&id={$item["id"]}'>[apagar]</a>
+                                    <a class='links' href='$editDataPage?estado=apagar&tipo=item&id={$item["id"]}'>[apagar]</a>
                                 </td></tr>";
 
                     }
@@ -163,7 +192,7 @@ if (!doesUserHavePermission("manage_items")) {
 
         // Starting the form to be able to create and add new items
         echo "<hr><h3>Gestao de itens - introdução</h3>";
-        echo "<form method='post' action='{$current_page}'>";
+        echo "<form method='post' action='$current_page'>";
 
         // The input for the Name of the item and its type
         echo "<h5>Nome do Item</h5>
@@ -185,7 +214,7 @@ if (!doesUserHavePermission("manage_items")) {
 
         // Hidden input to specify which state of the page im in
         echo "<input type='hidden' name='estado' value='inserir'>
-          <hr><button type='submit'>Inserir item</button>";
+          <hr><button type='submit'>Inserir item</button></form>";
 
         // Initialize the session variable to be able to check if item was already added to DB or not
         $_SESSION["itemAdded"] = false;
