@@ -167,7 +167,7 @@ if(!is_user_logged_in() && current_user_can('manage_subitems')){
             <?php
             $formf_types = get_enum_values($link, "subitem", "form_field_type");
             foreach ($formf_types as $f) {
-                echo '<input type="radio" name="formTYPE" value="' . $f . '">' . $f . '<br>';
+                echo '<input type="radio" class="checkmark" name="formTYPE" value="' . $f . '">' . $f . '<br>';
             }
             ?>
             <p>Escolha o tipo de unidade</p>
@@ -178,8 +178,8 @@ if(!is_user_logged_in() && current_user_can('manage_subitems')){
             <p>Insira o número de campo de formulário</p>
             <input type="text" id="formCamp" name="formCamp"><br>
             <p>Mandatoriedade</p>
-            <input type="radio" name="mandatory" value="1" checked><label for="mandatorio">Sim</label><br>
-            <input type="radio" name="mandatory" value="0"><label for="mandatorio">Não</label><br>
+            <input type="radio" name="mandatory" class="checkmark" value="1" checked><label for="mandatorio">Sim</label><br>
+            <input type="radio" class="checkmark" name="mandatory" value="0"><label for="mandatorio">Não</label><br>
             <input type="hidden" name="estado" value="inserir"><br><br>
             <button type="submit" class="button-33">Submeter</button>
         </form>
