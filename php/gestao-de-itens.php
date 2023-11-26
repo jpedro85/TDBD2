@@ -1,5 +1,4 @@
 <?php
-// TODO Found bug in css link its custom/ag.css instead of /custom/ag.css on wp-contents/themes/responsive/function.php
 require_once("custom/php/common.php");
 // TODO Css for the popup saying the invalid form inputs
 // TODO CSS for the error in queries
@@ -26,21 +25,21 @@ if (!doesUserHavePermission("manage_items")) {
         // Check itemName received is empty or just numbers
         if (empty($itemName) || is_numeric($itemName)) {
             $validForm = false;
-            $invalidFields .= "<p>Nome do item é invalido</p>";
+            $invalidFields .= "<li class='list'>Nome do item é invalido</li>";
         }
         // Checks whether the item type received is valid or not
         if (empty($typeName) || is_numeric($typeName) || !checkFieldExistsOnDatabase($link, $typeName, "item_type", "name")) {
             $validForm = false;
-            $invalidFields .= "<p>Tipo de item é invalido</p>";
+            $invalidFields .= "<li class='list'>Tipo de item é invalido</li>";
         }
         // Checks whether the item state received was valid or not
         if (empty($_REQUEST["state"]) || !in_array($_REQUEST["state"], $itemStates)) {
             $validForm = false;
-            $invalidFields .= "<p>Estado do item é invalido</p>";
+            $invalidFields .= "<li class='list'>Estado do item é invalido</li>";
         }
         // Checks if there were any errors in the server side verification
         if (!$validForm) {
-            echo $invalidFields;
+            echo "<div class='error-div'>$invalidFields</div>";
             voltar_atras();
         } else {
             // Fetch the item type id with same name as
@@ -98,7 +97,7 @@ if (!doesUserHavePermission("manage_items")) {
         }
     } else {
         // Initial State if there is no REQUEST["estado"]
-        echo "<table>";
+        echo "<table class='content-table'>";
         echo "<thead>
             <tr>
                 <th>tipo de item</th>
@@ -143,13 +142,13 @@ if (!doesUserHavePermission("manage_items")) {
                         $itemTypeRows .= "<td>{$item["state"]}</td>";
 
                         // Checking whether the current item state is active or inactive to have the correct action of changing state
-                        $item["state"] == "active" ? $itemAction = "<a href='$editDataPage?estado=desativar&tipo=item&id={$item["id"]}'>[desativar]</a>" : $itemAction = "<a href='$editDataPage?estado=ativar&tipo=item&id={$item["id"]}'>[ativar]</a>";
+                        $item["state"] == "active" ? $itemAction = "<a class='links' href='$editDataPage?estado=desativar&tipo=item&id={$item["id"]}'>[desativar]</a>" : $itemAction = "<a class='links' href='$editDataPage?estado=ativar&tipo=item&id={$item["id"]}'>[ativar]</a>";
 
                         // Formatting last column to have the all actions corresponding to the item data
                         $itemTypeRows .= "<td>
-                                    <a href='$editDataPage?estado=editar&tipo=item&id={$item["id"]}'>[editar]</a>
+                                    <a class='links' href='$editDataPage?estado=editar&tipo=item&id={$item["id"]}'>[editar]</a>
                                     {$itemAction}
-                                    <a href='$editDataPage?estado=apagar&tipo=item&id={$item["id"]}'>[apagar]</a>
+                                    <a class='links' href='$editDataPage?estado=apagar&tipo=item&id={$item["id"]}'>[apagar]</a>
                                 </td></tr>";
 
                     }
