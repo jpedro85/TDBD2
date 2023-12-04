@@ -4,14 +4,15 @@ require_once("custom/php/common.php");
 if(!is_user_logged_in() & current_user_can('manage_unit_types')){
     echo 'O Utilizador não tem permissões para aceder à página';
 }else{
+    $pattern = '/^[a-zA-Z0-9\s]+$/';
     $camposF="";
     $erro = false;
     if ($_REQUEST["estado"] == "inserir") {//caso o hidden estado esteja a inserir vai aparecer esta parte do código
 
         $camposF .= '<h3><b>Gestão de subitens - inserção</b></h3>
         <br>';
-        if (empty($_REQUEST["UnitType"]) || is_numeric($_REQUEST["UnitType"])) {//verificaçao do subitem name
-            $camposF .= '<li class="list">Falta inserir o nome do subitem, ou este é numérico</li>
+        if (empty($_REQUEST["UnitType"]) || is_numeric($_REQUEST["UnitType"]) || !preg_match($pattern, $_REQUEST["UnitType"])) {//verificaçao do subitem name
+            $camposF .= '<li class="list">Falta inserir o nome do subitem, ou este não cumpre os requisitos necessários</li>
             <br>';
             $erro = true;
         } else {
@@ -20,7 +21,7 @@ if(!is_user_logged_in() & current_user_can('manage_unit_types')){
         if ($erro) {
             echo '<div class="contorno">' . $camposF . '</div><br>';
             echo'<a class="links" href="http://localhost/sgbd/gestao-de-unidades/">Voltar atrás!</a><br>';
-        }
+        }else{
         echo
         '<form> 
              <input type="hidden" name="UnitType" value="' . $_REQUEST["UnitType"] . '"></form>';
@@ -33,16 +34,18 @@ if(!is_user_logged_in() & current_user_can('manage_unit_types')){
             // voltaatras();
         } else {
             echo '<li><b class="success">Inseriu os dados de novo tipo de unidade com sucesso.</b><br>Clique em Continuar para AVANÇAR!</li>
-        <a href=' . $current_page . ' ><button>Continuar</button></a>';}
+        <a href=' . $current_page . ' ><button>Continuar</button></a>';
+        }
+        }
     }else{
-    echo '<table>
+    echo '<table class="content-table">
     <tbody>
-    <tr>
-    <td>id</td>
-    <td>unidade</td>
-    <td>subitem</td>
-    <td>ação</td>
-    </tr>';
+    <thead>
+    <th>id</th>
+    <th>unidade</th>
+    <th>subitem</th>
+    <th>ação</th>
+    </thead>';
     $escrita = 0;
     $query = "SELECT id as UnitID, name as UnitName From subitem_unit_type";
     $resultquery = mysqli_query($link, $query);
