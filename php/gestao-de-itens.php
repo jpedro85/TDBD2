@@ -129,7 +129,7 @@ if (!doesUserHavePermission("manage_items")) {
                 else {
 
                     echo "<div class='error-div'>
-                            <strong class='list' >Ocorreu um erro na Inserção de dados: " . mysqli_error($link) . "</strong>
+                            <strong class='list' >Ocorreu um erro no inicio da Inserção de dados: " . mysqli_error($link) . "</strong>
                           </div>";
 
                     voltar_atras();
@@ -191,7 +191,7 @@ if (!doesUserHavePermission("manage_items")) {
                         $itemTypeRows .= "<td>{$item["state"]}</td>";
 
                         // Checking whether the current item state is active or inactive to have the correct action of changing state
-                        $item["state"] == "active" ? $itemAction = "<a class='links' href='$editDataPage?estado=desativar&tipo=item&id={$item["id"]}'>[desativar]</a>" : $itemAction = "<a class='links href='$editDataPage?estado=ativar&tipo=item&id={$item["id"]}'>[ativar]</a>";
+                        $item["state"] == "active" ? $itemAction = "<a class='links' href='$editDataPage?estado=desativar&tipo=item&id={$item["id"]}'>[desativar]</a>" : $itemAction = "<a class='links' href='$editDataPage?estado=ativar&tipo=item&id={$item["id"]}'>[ativar]</a>";
 
                         // Formatting last column to have the all actions corresponding to the item data
                         $itemTypeRows .= "<td>

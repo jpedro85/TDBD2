@@ -114,7 +114,7 @@ if (!doesUserHavePermission("manage_allowed_values")) {
             else {
 
                 echo "<div class='error-div'>
-                            <strong class='list' >Ocorreu um erro na Inserção de dados: " . mysqli_error($link) . "</strong>
+                            <strong class='list' >Ocorreu um erro no inicio da Inserção de dados: " . mysqli_error($link) . "</strong>
                           </div>";
 
                 voltar_atras();

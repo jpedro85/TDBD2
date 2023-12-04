@@ -9,12 +9,15 @@ if (arrayKeysExists(["estado", "tipo", "id"], $_REQUEST) && checkKeysValues(["es
         $validForm = true;
         $invalidFields = "";
 
-        // Trim the received values, so it has no spaces in the edges
+        // Trim the received values, so it has no spaces in the edges and is not a html special char
         $itemName = (isset($_REQUEST["itemName"])) ? trim($_REQUEST["itemName"]) : "";
+        $itemName = htmlspecialchars($itemName);
+
         $typeId = (isset($_REQUEST["typeId"])) ? trim($_REQUEST["typeId"]) : "";
+        $typeId = htmlspecialchars($typeId);
 
         // Check itemName received is empty or just numbers
-        if (empty($itemName) || is_numeric($itemName)) {
+        if (empty($itemName) || is_numeric($itemName) || containsOnlySpecialChars($itemName)) {
             $validForm = false;
             $invalidFields .= "<p>Nome do item é invalido</p>";
         }
@@ -30,16 +33,25 @@ if (arrayKeysExists(["estado", "tipo", "id"], $_REQUEST) && checkKeysValues(["es
         }// if there were no problems update the database
         else {
             if (!$_SESSION["itemUpdated"] && mysqli_begin_transaction($link)) {
+                // Using prepared statements here so to protect against sql injections if the values were properly sanitized
 
-                $updateItemQuery = "UPDATE item SET name = '$itemName', item_type_id = '$typeId' WHERE item.id = {$_REQUEST["id"]}";
-                $updateItemResult = mysqli_query($link, $updateItemQuery);
+                // Updating the correct value on the tables using prepared statements
+                $updateItemQuery = mysqli_prepare($link, "UPDATE item SET name = ?, item_type_id = ? WHERE item.id = ?");
+                mysqli_stmt_bind_param($updateItemQuery, "sss", $itemName, $typeId, $_REQUEST["id"]);
+
+                // Gets the result of the query execution
+                $updateItemResult = mysqli_stmt_execute($updateItemQuery);
+
                 // checking whether the query was successful or not
                 if (!$updateItemResult) {
+
+                    // Gets the error that happened in the prepared statement and outputs the value in htmlspecialchars
+                    $error = mysqli_stmt_error($updateItemQuery);
 
                     mysqli_rollback($link);
 
                     echo "<div class='error-div'>
-                           <strong class='list' >Ocorreu um erro na Atualização de dados: " . mysqli_error($link) . "</strong>
+                           <strong class='list' >Ocorreu um erro na Atualização de dados: " . htmlspecialchars($error) . "</strong>
                           </div>";
 
                     voltar_atras();
@@ -48,7 +60,8 @@ if (arrayKeysExists(["estado", "tipo", "id"], $_REQUEST) && checkKeysValues(["es
                     echo "<p>Atualizações realizadas com sucesso</p>
                           <p>Clique em continuar para voltar a pagina de gestao de itens</p>
                           <hr><a href='" . get_site_url() . "/gestao-de-itens'><button class='button-33'>Continuar</button></a>";
-                    // Commit the transaction
+
+                    // Commits the transaction
                     mysqli_commit($link);
                     $_SESSION["itemUpdated"] = true;
                 }
@@ -58,10 +71,11 @@ if (arrayKeysExists(["estado", "tipo", "id"], $_REQUEST) && checkKeysValues(["es
                          <b class='list'>Os dados ja foram atualizados</b>
                       </div>
                         <a href='" . get_site_url() . "/gestao-de-itens'><button class='button-33'>Continuar</button></a>";
-            } else {
+            }// If it doesn't pass all checks it means an error occurred starting the transaction
+            else {
 
                 echo "<div class='error-div'>
-                        <strong class='list' >Ocorreu um erro na Atualização de dados: " . mysqli_error($link) . "</strong>
+                        <strong class='list' >Ocorreu um erro no começo da Atualização de dados: " . mysqli_error($link) . "</strong>
                       </div>";
 
                 voltar_atras();
@@ -80,22 +94,29 @@ if (arrayKeysExists(["estado", "tipo", "id"], $_REQUEST) && checkKeysValues(["es
             </tr>
           </thead>";
 
-        // Fetching the id, name, item_type, state for the item requested
-        $itemQuery = "SELECT item.name AS itemName,item.item_type_id AS typeId , item.state FROM item WHERE item.id = {$_REQUEST["id"]}";
-        $itemQueryResult = mysqli_query($link, $itemQuery);
+        // Fetching the id, name, item_type, state for the item requested using prepared statements to prevent sql injection
+        $itemQuery = mysqli_prepare($link, "SELECT item.name AS itemName,item.item_type_id AS typeId , item.state FROM item WHERE item.id = ?");
+        mysqli_stmt_bind_param($itemQuery, "s", $_REQUEST["id"]);
+
+        // Gets the result of the query execution
+        $itemQueryResult = mysqli_stmt_execute($itemQuery);
 
         // Checking if the query was successful
         if (!$itemQueryResult) {
 
+            // Gets the error that happened in the prepared statement and outputs the value in htmlspecialchars
+            $error = mysqli_stmt_error($itemQuery);
+
             echo "<div class='error-div'>
-                    <strong class='list' >Ocorreu um erro na consulta:" . mysqli_error($link) . "</strong>
+                    <strong class='list' >Ocorreu um erro na consulta:" . htmlspecialchars($error) . "</strong>
                   </div>";
 
             voltar_atras();
         } else {
+            $itemQueryResult = mysqli_stmt_get_result($itemQuery);
             $itemData = mysqli_fetch_assoc($itemQueryResult);
 
-            // Fetching all item_type id for a dropdown box so we can choose the id more easily without needing mental mapping of the database
+            // Fetching all item_type id for a dropdown box so that we can choose the id more easily without needing mental mapping of the database
             $itemTypeQuery = "SELECT id as typeId FROM item_type";
             $itemTypeQueryResult = mysqli_query($link, $itemTypeQuery);
 
@@ -159,16 +180,24 @@ if (arrayKeysExists(["estado", "tipo", "id"], $_REQUEST) && checkKeysValues(["es
         } // if there were no problems update the database
         else {
             if (!$_SESSION["itemUpdated"] && mysqli_begin_transaction($link)) {
+                // Using prepared statements here so to protect against sql injections if the values were properly sanitized
 
-                $updateItemQuery = "UPDATE item SET state='active' WHERE item.id = {$_REQUEST["id"]}";
-                $updateItemResult = mysqli_query($link, $updateItemQuery);
+                // Updating the correct value on the tables using prepared statements
+                $updateItemQuery = mysqli_prepare($link, "UPDATE item SET state='active' WHERE item.id = ? ");
+                mysqli_stmt_bind_param($updateItemQuery, "s", $_REQUEST["id"]);
+
+                // Gets the result of the query execution
+                $updateItemResult = mysqli_stmt_execute($updateItemQuery);
 
                 // checking whether the query was successful or not
                 if (!$updateItemResult) {
+                    // Gets the error that happened in the prepared statement and outputs the value in htmlspecialchars
+                    $error = mysqli_stmt_error($updateItemQuery);
+
                     mysqli_rollback($link);
 
                     echo "<div class='error-div'>
-                           <strong class='list' >Ocorreu um erro na Atualização de dados: " . mysqli_error($link) . "</strong>
+                           <strong class='list' >Ocorreu um erro na Atualização de dados: " . htmlspecialchars($error) . "</strong>
                           </div>";
 
                     voltar_atras();
@@ -191,7 +220,7 @@ if (arrayKeysExists(["estado", "tipo", "id"], $_REQUEST) && checkKeysValues(["es
             } else {
 
                 echo "<div class='error-div'>
-                        <strong class='list' >Ocorreu um erro na Atualização de dados: " . mysqli_error($link) . "</strong>
+                        <strong class='list' >Ocorreu um erro no começo da Atualização de dados: " . mysqli_error($link) . "</strong>
                       </div>";
 
                 voltar_atras();
@@ -209,19 +238,26 @@ if (arrayKeysExists(["estado", "tipo", "id"], $_REQUEST) && checkKeysValues(["es
             </tr>
           </thead>";
 
-        // Fetching the id, name, item_type, state for the item requested
-        $itemQuery = "SELECT item.name AS itemName,item.item_type_id AS typeId , item.state FROM item WHERE item.id = {$_REQUEST["id"]}";
-        $itemQueryResult = mysqli_query($link, $itemQuery);
+        // Fetching the id, name, item_type, state for the item requested using prepared statements to prevent sql injection
+        $itemQuery = mysqli_prepare($link, "SELECT item.name AS itemName,item.item_type_id AS typeId , item.state FROM item WHERE item.id = ? ");
+        mysqli_stmt_bind_param($itemQuery, "s", $_REQUEST["id"]);
+
+        // Gets the result of the query execution
+        $itemQueryResult = mysqli_stmt_execute($itemQuery);
 
         if (!$itemQueryResult) {
 
+            // Gets the error that happened in the prepared statement and outputs the value in htmlspecialchars
+            $error = mysqli_stmt_error($itemQuery);
+
             echo "<div class='error-div'>
-                    <strong class='list' >Ocorreu um erro na consulta:" . mysqli_error($link) . "</strong>
+                    <strong class='list' >Ocorreu um erro na consulta:" . htmlspecialchars($error) . "</strong>
                   </div>";
 
             voltar_atras();
         } else {
 
+            $itemQueryResult = mysqli_stmt_get_result($itemQuery);
             $itemData = mysqli_fetch_assoc($itemQueryResult);
 
             echo "
@@ -266,16 +302,24 @@ else if (arrayKeysExists(["estado", "tipo", "id"], $_REQUEST) && checkKeysValues
         } // if there were no problems update the database
         else {
             if (!$_SESSION["itemUpdated"] && mysqli_begin_transaction($link)) {
+                // Using prepared statements here so to protect against sql injections if the values were properly sanitized
 
-                $updateItemQuery = "UPDATE item SET state='inactive' WHERE item.id = {$_REQUEST["id"]}";
-                $updateItemResult = mysqli_query($link, $updateItemQuery);
+                // Updating the correct value on the tables using prepared statements
+                $updateItemQuery = mysqli_prepare($link, "UPDATE item SET state='inactive' WHERE item.id = ? ");
+                mysqli_stmt_bind_param($updateItemQuery, "s", $_REQUEST["id"]);
+
+                // Gets the result of the query execution
+                $updateItemResult = mysqli_stmt_execute($updateItemQuery);
 
                 // checking whether the query was successful or not
                 if (!$updateItemResult) {
+                    // Gets the error that happened in the prepared statement and outputs the value in htmlspecialchars
+                    $error = mysqli_stmt_error($updateItemQuery);
+
                     mysqli_rollback($link);
 
                     echo "<div class='error-div'>
-                           <strong class='list' >Ocorreu um erro na Atualização de dados: " . mysqli_error($link) . "</strong>
+                           <strong class='list' >Ocorreu um erro na Atualização de dados: " . htmlspecialchars($error) . "</strong>
                           </div>";
 
                     voltar_atras();
@@ -298,7 +342,7 @@ else if (arrayKeysExists(["estado", "tipo", "id"], $_REQUEST) && checkKeysValues
             } else {
 
                 echo "<div class='error-div'>
-                        <strong class='list' >Ocorreu um erro na Atualização de dados: " . mysqli_error($link) . "</strong>
+                        <strong class='list' >Ocorreu um erro no começo da Atualização de dados: " . mysqli_error($link) . "</strong>
                       </div>";
 
                 voltar_atras();
@@ -317,18 +361,27 @@ else if (arrayKeysExists(["estado", "tipo", "id"], $_REQUEST) && checkKeysValues
             </tr>
           </thead>";
 
-        // Fetching the id, name, item_type, state for the item requested
-        $itemQuery = "SELECT item.name AS itemName,item.item_type_id AS typeId , item.state FROM item WHERE item.id = {$_REQUEST["id"]}";
-        $itemQueryResult = mysqli_query($link, $itemQuery);
+        // Fetching the id, name, item_type, state for the item requested using prepared statements to prevent sql injection
+        $itemQuery = mysqli_prepare($link, "SELECT item.name AS itemName,item.item_type_id AS typeId , item.state FROM item WHERE item.id = ? ");
+        mysqli_stmt_bind_param($itemQuery, "s", $_REQUEST["id"]);
+
+        // Gets the result of the query execution
+        $itemQueryResult = mysqli_stmt_execute($itemQuery);
+
+        // Checks whether the query was successful or not
         if (!$itemQueryResult) {
+            // Gets the error that happened in the prepared statement and outputs the value in htmlspecialchars
+            $error = mysqli_stmt_error($itemQuery);
+
+            mysqli_rollback($link);
 
             echo "<div class='error-div'>
-                    <strong class='list' >Ocorreu um erro na consulta:" . mysqli_error($link) . "</strong>
+                    <strong class='list' >Ocorreu um erro na consulta:" . mysqli_error($error) . "</strong>
                   </div>";
 
             voltar_atras();
         } else {
-
+            $itemQueryResult = mysqli_stmt_get_result($itemQuery);
             $itemData = mysqli_fetch_assoc($itemQueryResult);
 
             echo "
@@ -356,16 +409,24 @@ else if (arrayKeysExists(["estado", "tipo", "id"], $_REQUEST) && checkKeysValues
 } else if (arrayKeysExists(["estado", "tipo", "id"], $_REQUEST) && checkKeysValues(["estado", "tipo"], $_REQUEST, ["apagar", "item"])) {
     if (array_key_exists("updateState", $_REQUEST) && $_REQUEST["updateState"] == "deleting") {
         if (!$_SESSION["itemUpdated"] && mysqli_begin_transaction($link)) {
+            // Using prepared statements here so to protect against sql injections if the values were properly sanitized
 
-            $deleteItemQuery = "DELETE FROM item WHERE item.id = {$_REQUEST["id"]}";
-            $deleteItemResult = mysqli_query($link, $deleteItemQuery);
+            // Updating the correct value on the tables using prepared statements
+            $deleteItemQuery = mysqli_prepare($link, "DELETE FROM item WHERE item.id = ? ");
+            mysqli_stmt_bind_param($deleteItemQuery, "s", $_REQUEST["id"]);
+
+            // Gets the result of the query execution
+            $deleteItemResult = mysqli_stmt_execute($deleteItemQuery);
 
             // checking whether the query was successful or not
             if (!$deleteItemResult) {
+                // Gets the error that happened in the prepared statement and outputs the value in htmlspecialchars
+                $error = mysqli_stmt_error($deleteItemQuery);
+
                 mysqli_rollback($link);
 
                 echo "<div class='error-div'>
-                           <strong class='list' >Ocorreu um erro na Atualização de dados: " . mysqli_error($link) . "</strong>
+                           <strong class='list' >Ocorreu um erro na Atualização de dados: " . htmlspecialchars($error) . "</strong>
                           </div>";
 
                 voltar_atras();
@@ -388,7 +449,7 @@ else if (arrayKeysExists(["estado", "tipo", "id"], $_REQUEST) && checkKeysValues
         } else {
 
             echo "<div class='error-div'>
-                    <strong class='list' >Ocorreu um erro na Atualização de dados: " . mysqli_error($link) . "</strong>
+                    <strong class='list' >Ocorreu um erro no começo de Atualização de dados: " . mysqli_error($link) . "</strong>
                   </div>";
 
             voltar_atras();
@@ -405,19 +466,27 @@ else if (arrayKeysExists(["estado", "tipo", "id"], $_REQUEST) && checkKeysValues
             </tr>
           </thead>";
 
-        // Fetching the id, name, item_type, state for the item requested
-        $itemQuery = "SELECT item.name AS itemName,item.item_type_id AS typeId , item.state FROM item WHERE item.id = {$_REQUEST["id"]}";
-        $itemQueryResult = mysqli_query($link, $itemQuery);
+        // Fetching the id, name, item_type, state for the item requested using prepared statements to prevent sql injection
+        $itemQuery = mysqli_prepare($link, "SELECT item.name AS itemName,item.item_type_id AS typeId , item.state FROM item WHERE item.id = ? ");
+        mysqli_stmt_bind_param($itemQuery, "s", $_REQUEST["id"]);
+
+        // Gets the result of the query execution
+        $itemQueryResult = mysqli_stmt_execute($itemQuery);
+
 
         if (!$itemQueryResult) {
+            // Gets the error that happened in the prepared statement and outputs the value in htmlspecialchars
+            $error = mysqli_stmt_error($itemQuery);
+
+            mysqli_rollback($link);
 
             echo "<div class='error-div'>
-                    <strong class='list' >Ocorreu um erro na consulta:" . mysqli_error($link) . "</strong>
+                    <strong class='list' >Ocorreu um erro na consulta:" . htmlspecialchars($error) . "</strong>
                   </div>";
 
             voltar_atras();
         } else {
-
+            $itemQueryResult = mysqli_stmt_get_result($itemQuery);
             $itemData = mysqli_fetch_assoc($itemQueryResult);
 
             echo "
