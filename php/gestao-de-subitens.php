@@ -6,11 +6,12 @@ if(!is_user_logged_in() && current_user_can('manage_subitems')){
     echo 'O Utilizador não tem permissões para aceder à página';
 }else {
     echo 2;
+    $pattern = '/^[a-zA-Z0-9\s]+$/';
     $camposF = '<h3><b>Gestão de subitens - inserção</b></h3><br>';
     $erro = false;
     if ($_REQUEST["estado"] == "inserir") {//caso o hidden estado esteja a inserir vai aparecer esta parte do código
 // Verificação do subitem name
-        if (empty($_REQUEST["ITname"]) || is_numeric($_REQUEST["ITname"])) {
+        if (empty($_REQUEST["ITname"]) || is_numeric($_REQUEST["ITname"]) || !preg_match($pattern, $_REQUEST["ITname"])) {
             $camposF .= '<li class="list">Falta inserir o nome do subitem, ou este é numérico</li><br>';
             $erro = true;
         }
@@ -35,8 +36,8 @@ if(!is_user_logged_in() && current_user_can('manage_subitems')){
             <noscript>
             <a href='" . $_SERVER['HTTP_REFERER'] . "‘ class='backLink' title='Voltar atr&aacute;s'>Voltar atr&aacute;s</a>
             </noscript>";
-        }
-        echo '<form> 
+        }else {
+            echo '<form> 
              <input type="hidden" name="ITname" value="' . $_REQUEST["ITname"] . '">
              <input type="hidden" name="Eitem" value="' . $_REQUEST["Eitem"] . '">
              <input type="hidden" name="slctunit" value="' . $_REQUEST["slctunit"] . '">
@@ -45,42 +46,42 @@ if(!is_user_logged_in() && current_user_can('manage_subitems')){
              </form>';
 
 //Iserção da dados na Base de Dados
-        $itemQuery = mysqli_query($link, "SELECT name as itemName, id FROM item WHERE id = " . $_REQUEST["Eitem"]);
-        $itemFetch = mysqli_fetch_assoc($itemQuery);
+            $itemQuery = mysqli_query($link, "SELECT name as itemName, id FROM item WHERE id = " . $_REQUEST["Eitem"]);
+            $itemFetch = mysqli_fetch_assoc($itemQuery);
 
 // Obtendo o ID do subitem
-        $subItemQuery = mysqli_query($link, "SELECT id as subItemID FROM subitem WHERE name = '" . $_REQUEST["ITname"] . "'");
-        $subItemFetch = mysqli_fetch_assoc($subItemQuery);
+            $subItemQuery = mysqli_query($link, "SELECT id as subItemID FROM subitem WHERE name = '" . $_REQUEST["ITname"] . "'");
+            $subItemFetch = mysqli_fetch_assoc($subItemQuery);
 
 // transformaçao do nome de campo de formulário com o id
-        $tresLetras = substr("'" . $itemFetch["itemName"] . "'", 1, 3);
-        $formFieldName = $tresLetras . "-" . $_REQUEST["ITname"];
+            $tresLetras = substr("'" . $itemFetch["itemName"] . "'", 1, 3);
+            $formFieldName = $tresLetras . "-" . $_REQUEST["ITname"];
 
 //Query de Inserção
-        $insertQuery = "INSERT INTO subitem(id, name, item_id, value_type, form_field_name, form_field_type, unit_type_id, form_field_order, mandatory, state) VALUES 
+            $insertQuery = "INSERT INTO subitem(id, name, item_id, value_type, form_field_name, form_field_type, unit_type_id, form_field_order, mandatory, state) VALUES 
                 (NULL, '" . $_REQUEST["ITname"] . "', '" . $_REQUEST["Eitem"] . "', '" . $_REQUEST["valueT"] . "', '" . $formFieldName . "', '" . $_REQUEST["formTYPE"] . "', '" . $_REQUEST["slctunit"] . "', '" . $_REQUEST["formCamp"] . "', '" . $_REQUEST["mandatory"] . "', 'active')";
 
 // Verificação da query
-        if (!mysqli_query($link, $insertQuery)) {
-            // Exibindo mensagens de erro
-            echo mysqli_error($link);
-            echo "<li class='list'>Ocorreu um erro durante a inserção.</b>";
-           // voltaatras();
-        } else {
-            //Query para atualizar o nome de campo de formulário
-            /*$queryAtuali= mysqli_query($link,"SELECT id as NewID FROM subitem name = '" . $_REQUEST["ITname"] . "'" );
-            $queryAtualiFetch = mysqli_fetch_assoc($queryAtuali);*/
-            //Vai me dar o novo ID inserido na Base de Dados
-            // Exibindo mensagem de sucesso e botão para continuar
+            if (!mysqli_query($link, $insertQuery)) {
+                // Exibindo mensagens de erro
+                echo mysqli_error($link);
+                echo "<li class='list'>Ocorreu um erro durante a inserção.</b>";
+                // voltaatras();
+            } else {
+                //Query para atualizar o nome de campo de formulário
+                /*$queryAtuali= mysqli_query($link,"SELECT id as NewID FROM subitem name = '" . $_REQUEST["ITname"] . "'" );
+                $queryAtualiFetch = mysqli_fetch_assoc($queryAtuali);*/
+                //Vai me dar o novo ID inserido na Base de Dados
+                // Exibindo mensagem de sucesso e botão para continuar
 
-            echo '<li><b class="success">Os dados foram inseridos com sucesso</b><br>Clique em Continuar para AVANÇAR!</li>
-                  <a href=' . $current_page . ' ><button>Continuar</button></a>';
-            $NewID=mysqli_insert_id($link);
-            $NewFormFName = $tresLetras . "-".$NewID."-" . $_REQUEST["ITname"];
-            $updateQuery = "UPDATE subitem SET form_field_name = '" . $NewFormFName . "' WHERE id = " . $NewID;
+                echo '<li><b class="success">Os dados foram inseridos com sucesso</b><br>Clique em Continuar para AVANÇAR!</li>
+        <a href=' . $current_page . ' ><button>Continuar</button></a>';
+                $NewID = mysqli_insert_id($link);
+                $NewFormFName = $tresLetras . "-" . $NewID . "-" . $_REQUEST["ITname"];
+                $updateQuery = "UPDATE subitem SET form_field_name = '" . $NewFormFName . "' WHERE id = " . $NewID;
+            }
+
         }
-
-
     }else{
         echo '<table class="content-table">
     <tbody>
@@ -147,7 +148,7 @@ if(!is_user_logged_in() && current_user_can('manage_subitems')){
         <h2>
         <b>Gestão de SubItems -INTRODUÇÃO</b>
         </h2>
-        <form action="' . $current_page . '" method="post">
+        <form class"container action="' . $current_page . '" method="post">
         <label for="ITname">Nome do Subitem:<b>(Obrigatório!)</b></label>
         <br>
         <input type="text" id="ITname" name="ITname">
@@ -177,9 +178,17 @@ if(!is_user_logged_in() && current_user_can('manage_subitems')){
             <br>
             <p>Insira o número de campo de formulário</p>
             <input type="text" id="formCamp" name="formCamp"><br>
+
             <p>Mandatoriedade</p>
-            <input type="radio" name="mandatory" value="1" checked><label for="mandatorio">Sim</label><br>
-            <input type="radio" name="mandatory" value="0"><label for="mandatorio">Não</label><br>
+            <label class="checkBox">
+                <input type="radio" name="mandatory" value="1" checked>
+                <span class="checkmark"></span>Sim
+            </label><br>
+            <label class= "checkBox">
+                <input type="radio" name="mandatory" value="0">
+                <span class='checkmark'></span>Não
+            </label><br>
+
             <input type="hidden" name="estado" value="inserir"><br><br>
             <button type="submit" class="button-33">Submeter</button>
         </form>
