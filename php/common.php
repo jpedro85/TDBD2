@@ -81,4 +81,10 @@ function voltar_atras()
 
 }
 
+function containsOnlySpecialChars($str) {
+    // Use a regular expression to check if the string contains only special characters
+    // Checks if there is more than um char that's either lowercase or uppercase
+    return preg_match('/^[^a-zA-Z]+$/', $str) === 1;
+}
+
 ?>
