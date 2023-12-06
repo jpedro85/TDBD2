@@ -20,8 +20,11 @@ if (!doesUserHavePermission("manage_allowed_values")) {
         echo "<h5>Nome do Valor Permitido</h5>
               <input type='text' name='value' id='valueName' placeholder='Ex.: fino, ligeiro, moderado, fechadas ...'>
               <input type='hidden' name='estado' value='inserir' >
-              <button type='submit'>Inserir valor permitido</button></form>
-              <a href='$current_page'><button>Voltar Atrás</button></a>";
+              <hr>
+              <div class='button-container'>
+                  <button class='button-33' type='submit'>Inserir valor permitido</button></form>
+                  ".goBackToOriginalPage("gestao-de-valores-permitidos")."
+              </div>";
 
         $_SESSION["allowedValueAdded"] = false;
         $_SESSION["subitemId"] = $_REQUEST["subitem"];
@@ -73,27 +76,29 @@ if (!doesUserHavePermission("manage_allowed_values")) {
 
                     voltar_atras();
                 } else {
-                    echo "<b class='success'>Inseriu os dados de novo valor permitido com sucesso.</b>
-                              <table class='content-table'>
-                                    <thead>
-                                        <tr>
-                                            <th>id</th>
-                                            <th>value</th>
-                                            <th>subitem_id</th>
-                                            <th>state</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <tr>
-                                            <td>" . mysqli_insert_id($link) . "</td>
-                                            <td> $newAllowedValued</td>
-                                            <td>{$_SESSION["subitemId"]}</td>
-                                            <td>active</td>
-                                        </tr> 
-                                    </tbody>
-                              </table>
-                              <p>Clique em <strong>Continuar</strong> para avançar</p>
-                              <a href='$current_page'><button>Continuar</button></a>";
+                    echo "<div class='contorno'>
+                            <b class='success'>Inseriu os dados de novo valor permitido com sucesso.</b>
+                          </div>
+                          <table class='content-table'>
+                                <thead>
+                                    <tr>
+                                        <th>id</th>
+                                        <th>value</th>
+                                        <th>subitem_id</th>
+                                        <th>state</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td><strong>" . mysqli_insert_id($link) . "</strong></td>
+                                        <td><strong>$newAllowedValued</strong></td>
+                                        <td><strong>{$_SESSION["subitemId"]}</strong></td>
+                                        <td><strong>active</strong></td>
+                                    </tr> 
+                                </tbody>
+                          </table>
+                          <p>Clique em <strong>Continuar</strong> para avançar</p>
+                          <a href='$current_page'><button class='button-33'>Continuar</button></a>";
 
                     // Commit the transaction
                     mysqli_commit($link);
@@ -108,7 +113,7 @@ if (!doesUserHavePermission("manage_allowed_values")) {
                 echo "<div class='error-div'>
                         <strong class='list'>O valor permitido já foi inserido</strong>
                       </div>
-                      <a href='$current_page'><button>Continuar</button></a>";
+                      <a href='$current_page'><button class='button-33'>Continuar</button></a>";
 
             } // If it didn't pass all the other checks it means an error occurred on the transaction start
             else {

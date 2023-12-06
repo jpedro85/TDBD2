@@ -19,23 +19,23 @@ if (arrayKeysExists(["estado", "tipo", "id"], $_REQUEST) && checkKeysValues(["es
         // Check itemName received is empty or just numbers
         if (empty($itemName) || is_numeric($itemName) || containsOnlySpecialChars($itemName)) {
             $validForm = false;
-            $invalidFields .= "<p>Nome do item é invalido</p>";
+            $invalidFields .= "<li class='list'>Nome do item é invalido</li>";
         }
         // Checks whether the item type received is valid or not
         if (empty($typeId) || !is_numeric($typeId) || !checkFieldExistsOnDatabase($link, $_REQUEST["typeId"], "item_type", "id")) {
             $validForm = false;
-            $invalidFields .= "<p>Id do tipo de item é invalido</p>";
+            $invalidFields .= "<li class='list'>Id do tipo de item é invalido</li>";
         }
         // Checks whether the item id received is valid or not
         if (empty($_REQUEST["id"]) || !is_numeric($_REQUEST["id"]) || $_REQUEST["id"] != $_REQUEST["itemId"]) {
             $validForm = false;
-            $invalidFields .= "<p>O id do Item é invalido</p>";
+            $invalidFields .= "<li class='list'>O id do Item é invalido</li>";
         }
 
         // Checks if there were any errors in the server side verification
         if (!$validForm) {
-            echo $invalidFields;
-            voltar_atras();
+            echo "<div class='error-div'>$invalidFields</div><hr>";
+            voltar_atras();;
         }// if there were no problems update the database
         else {
             if (!$_SESSION["itemUpdated"] && mysqli_begin_transaction($link)) {
@@ -57,13 +57,15 @@ if (arrayKeysExists(["estado", "tipo", "id"], $_REQUEST) && checkKeysValues(["es
                     mysqli_rollback($link);
 
                     echo "<div class='error-div'>
-                           <strong class='list' >Ocorreu um erro na Atualização de dados: " . htmlspecialchars($error) . "</strong>
+                            <strong class='list' >Ocorreu um erro na Atualização de dados: " . htmlspecialchars($error) . "</strong>
                           </div>";
 
                     voltar_atras();
                 } else {
 
-                    echo "<p>Atualizações realizadas com sucesso</p>
+                    echo "<div class='contorno'>
+                            <p class='success'>Atualizações realizadas com sucesso</p>
+                          </div>
                           <p>Clique em continuar para voltar a pagina de gestao de itens</p>
                           <hr><a href='" . get_site_url() . "/gestao-de-itens'><button class='button-33'>Continuar</button></a>";
 
@@ -76,7 +78,8 @@ if (arrayKeysExists(["estado", "tipo", "id"], $_REQUEST) && checkKeysValues(["es
                 echo "<div class='error-div'>
                          <b class='list'>Os dados ja foram atualizados</b>
                       </div>
-                        <a href='" . get_site_url() . "/gestao-de-itens'><button class='button-33'>Continuar</button></a>";
+                      <hr>
+                      <a href='" . get_site_url() . "/gestao-de-itens'><button class='button-33'>Continuar</button></a>";
             }// If it doesn't pass all checks it means an error occurred starting the transaction
             else {
 
@@ -91,14 +94,14 @@ if (arrayKeysExists(["estado", "tipo", "id"], $_REQUEST) && checkKeysValues(["es
         echo "<form method='post' action='" . get_permalink() . basename($_SERVER["REQUEST_URI"]) . "'>
               <table class='content-table'>";
         echo "
-          <thead>
-            <tr>
-                <th>id</th>
-                <th>name</th>
-                <th>item_type_id</th>
-                <th>state</th>
-            </tr>
-          </thead>";
+              <thead>
+                <tr>
+                    <th>id</th>
+                    <th>name</th>
+                    <th>item_type_id</th>
+                    <th>state</th>
+                </tr>
+              </thead>";
 
         // Fetching the id, name, item_type, state for the item requested using prepared statements to prevent sql injection
         $itemQuery = mysqli_prepare($link, "SELECT item.name AS itemName,item.item_type_id AS typeId , item.state FROM item WHERE item.id = ?");
@@ -129,8 +132,8 @@ if (arrayKeysExists(["estado", "tipo", "id"], $_REQUEST) && checkKeysValues(["es
             if (!$itemTypeQueryResult) {
 
                 echo "<div class='error-div'>
-                    <strong class='list' >Ocorreu um erro na consulta:" . mysqli_error($link) . "</strong>
-                  </div>";
+                        <strong class='list' >Ocorreu um erro na consulta:" . mysqli_error($link) . "</strong>
+                      </div>";
 
                 voltar_atras();
 
@@ -160,9 +163,11 @@ if (arrayKeysExists(["estado", "tipo", "id"], $_REQUEST) && checkKeysValues(["es
                 <input type='hidden' name='updateState' value='updating'>
                 <input type='hidden' name='itemId' value='{$_REQUEST["id"]}'>
                 <p>Clique em <strong>Submeter</strong> para atualizar os dados</p>
-                <hr><button class='button-33' type='submit'>Submeter</button></form>";
-
-                voltar_atras();
+                <hr>
+                <div class='button-container'>
+                    <button class='button-33' type='submit'>Submeter</button></form>
+                    " . goBackToOriginalPage("gestao-de-itens") . "
+                </div>";
 
                 $_SESSION["itemUpdated"] = false;
             }
@@ -177,19 +182,19 @@ if (arrayKeysExists(["estado", "tipo", "id"], $_REQUEST) && checkKeysValues(["es
         // Checks whether the item type received is valid or not
         if (empty($_REQUEST["state"]) || $_REQUEST["state"] != "active") {
             $validForm = false;
-            $invalidFields .= "<p>Estado do item é invalido</p>";
+            $invalidFields .= "<li class='list'>Estado do item é invalido</li>";
         }
 
         // Checks whether the item id received is valid or not
         if (empty($_REQUEST["id"]) || !is_numeric($_REQUEST["id"]) || $_REQUEST["id"] != $_REQUEST["itemId"]) {
             $validForm = false;
-            $invalidFields .= "<p>O id do Item é invalido</p>";
+            $invalidFields .= "<li class='list'>O id do Item é invalido</li>";
         }
 
         // Checks if there were any errors in the server side verification
         if (!$validForm) {
-            echo $invalidFields;
-            voltar_atras();
+            echo "<div class='error-div'>$invalidFields</div><hr>";
+            voltar_atras();;
         } // if there were no problems update the database
         else {
             if (!$_SESSION["itemUpdated"] && mysqli_begin_transaction($link)) {
@@ -216,7 +221,9 @@ if (arrayKeysExists(["estado", "tipo", "id"], $_REQUEST) && checkKeysValues(["es
                     voltar_atras();
                 } else {
 
-                    echo "<p>Atualização realizada com sucesso</p>
+                    echo "<div class='contorno'>
+                            <p class='success'>Atualização realizada com sucesso</p>
+                          </div>
                           <p>Clique em continuar para voltar a pagina de gestao de itens</p>
                           <hr><a href='" . get_site_url() . "/gestao-de-itens'><button class='button-33'>Continuar</button></a>";
 
@@ -288,9 +295,11 @@ if (arrayKeysExists(["estado", "tipo", "id"], $_REQUEST) && checkKeysValues(["es
             <input type='hidden' name='updateState' value='activating'>
             <input type='hidden' name='itemId' value='{$_REQUEST["id"]}'>
             <p>Clique em <strong>Submeter</strong> para atualizar os dados</p>
-            <hr><button class='button-33' type='submit'>Submeter</button></form>";
-
-            voltar_atras();
+            <hr>
+            <div class='button-container'>
+                <button class='button-33' type='submit'>Submeter</button>
+                " . goBackToOriginalPage("gestao-de-itens") . "
+            </div></form>";
 
             $_SESSION["itemUpdated"] = false;
 
@@ -306,19 +315,19 @@ else if (arrayKeysExists(["estado", "tipo", "id"], $_REQUEST) && checkKeysValues
         // Checks whether the item type received is valid or not
         if (empty($_REQUEST["state"]) || $_REQUEST["state"] != "inactive") {
             $validForm = false;
-            $invalidFields .= "<p>Estado do item é invalido</p>";
+            $invalidFields .= "<li class='list'>Estado do item é invalido</li>";
         }
 
         // Checks whether the item id received is valid or not
         if (empty($_REQUEST["id"]) || !is_numeric($_REQUEST["id"]) || $_REQUEST["id"] != $_REQUEST["itemId"]) {
             $validForm = false;
-            $invalidFields .= "<p>O id do Item é invalido</p>";
+            $invalidFields .= "<li class='list'>O id do Item é invalido</li>";
         }
 
         // Checks if there were any errors in the server side verification
         if (!$validForm) {
-            echo $invalidFields;
-            voltar_atras();
+            echo "<div class='error-div'>$invalidFields</div><hr>";
+            voltar_atras();;
         } // if there were no problems update the database
         else {
             if (!$_SESSION["itemUpdated"] && mysqli_begin_transaction($link)) {
@@ -345,7 +354,9 @@ else if (arrayKeysExists(["estado", "tipo", "id"], $_REQUEST) && checkKeysValues
                     voltar_atras();
                 } else {
 
-                    echo "<p>Atualização realizada com sucesso</p>
+                    echo "<div class='contorno'>
+                            <p class='success'>Atualização realizada com sucesso</p>
+                          </div>
                           <p>Clique em continuar para voltar a pagina de gestao de itens</p>
                           <hr><a href='" . get_site_url() . "/gestao-de-itens'><button class='button-33'>Continuar</button></a>";
 
@@ -419,9 +430,11 @@ else if (arrayKeysExists(["estado", "tipo", "id"], $_REQUEST) && checkKeysValues
             <input type='hidden' name='updateState' value='deactivating'>
             <input type='hidden' name='itemId' value='{$_REQUEST["id"]}'>
             <p>Clique em <strong>Submeter</strong> para atualizar os dados</p>
-            <hr><button class='button-33' type='submit'>Submeter</button></form>";
-
-            voltar_atras();
+            <hr>
+            <div class='button-container'>
+                <button class='button-33' type='submit'>Submeter</button></form>
+                " . goBackToOriginalPage("gestao-de-itens") . "
+            </div>";
 
             $_SESSION["itemUpdated"] = false;
 
@@ -436,12 +449,12 @@ else if (arrayKeysExists(["estado", "tipo", "id"], $_REQUEST) && checkKeysValues
         // Checks whether the item id received is valid or not
         if (empty($_REQUEST["id"]) || !is_numeric($_REQUEST["id"]) || $_REQUEST["id"] != $_REQUEST["itemId"]) {
             $validForm = false;
-            $invalidFields .= "<p>O id do Item é invalido</p>";
+            $invalidFields .= "<li class='list'>O id do Item é invalido</li>";
         }
 
         // Checks if there were any errors in the server side verification
         if (!$validForm) {
-            echo $invalidFields;
+            echo "<div class='error-div'>$invalidFields</div><hr>";
             voltar_atras();
         } // if there were no problems update the database
         else {
@@ -469,7 +482,9 @@ else if (arrayKeysExists(["estado", "tipo", "id"], $_REQUEST) && checkKeysValues
                     voltar_atras();
                 } else {
 
-                    echo "<p>Eliminições realizadas com sucesso</p>
+                    echo "<div class='contorno'>
+                            <p class='success'>Eliminações realizadas com sucesso</p>
+                          </div>
                           <p>Clique em continuar para voltar a pagina de gestao de itens</p>
                           <hr><a href='" . get_site_url() . "/gestao-de-itens'><button class='button-33'>Continuar</button></a>";
 
@@ -540,9 +555,11 @@ else if (arrayKeysExists(["estado", "tipo", "id"], $_REQUEST) && checkKeysValues
             <input type='hidden' name='updateState' value='deleting'>
             <input type='hidden' name='itemId' value='{$_REQUEST["id"]}'>
             <p>Clique em <strong>Submeter</strong> para apagar os dados</p>
-            <hr><button class='button-33' type='submit'>Submeter</button></form>";
-
-            voltar_atras();
+            <hr>
+            <div class='button-container'>
+                <button class='button-33' type='submit'>Submeter</button></form>
+                " . goBackToOriginalPage("gestao-de-itens") . "
+            </div>";
 
             $_SESSION["itemUpdated"] = false;
 
@@ -566,21 +583,21 @@ else if (arrayKeysExists(["estado", "tipo", "id"], $_REQUEST) && checkKeysValues
         // Check itemName received is empty or just numbers
         if (empty($allowedValue) || is_numeric($allowedValue) || containsOnlySpecialChars($allowedValue)) {
             $validForm = false;
-            $invalidFields .= "<p>Nome do valor permitido é inválid</p>";
+            $invalidFields .= "<li class='list'>Nome do valor permitido é inválid</li>";
         }
         // Checks whether the subitem id received is valid or not
         if (empty($subId) || !is_numeric($subId) || !checkFieldExistsOnDatabase($link, $_REQUEST["subId"], "subitem", "id")) {
             $validForm = false;
-            $invalidFields .= "<p>Id do subitem é invalido</p>";
+            $invalidFields .= "<li class='list'>Id do subitem é invalido</li>";
         }
         // Checks whether the item id received is valid or not
         if (empty($_REQUEST["allowedId"]) || !is_numeric($_REQUEST["allowedId"]) || $_REQUEST["id"] != $_REQUEST["allowedId"]) {
             $validForm = false;
-            $invalidFields .= "<p>O id do subitem é invalido</p>";
+            $invalidFields .= "<li class='list'>O id do subitem é invalido</li>";
         }
         // Checks if there were any errors in the server side verification
         if (!$validForm) {
-            echo $invalidFields;
+            echo "<div class='error-div'>$invalidFields</div><hr>";
             voltar_atras();
         }// if there were no problems update the database
         else {
@@ -607,7 +624,9 @@ else if (arrayKeysExists(["estado", "tipo", "id"], $_REQUEST) && checkKeysValues
                     voltar_atras();
                 } else {
 
-                    echo "<p>Atualizações realizadas com sucesso</p>
+                    echo "<div class='contorno'>
+                            <p class='success'>Atualizações realizadas com sucesso</p>
+                          </div>
                           <p>Clique em continuar para voltar a pagina de gestao de valores permitidos</p>
                           <hr><a href='" . get_site_url() . "/gestao-de-valores-permitidos'><button class='button-33'>Continuar</button></a>";
                     // Commit the transaction
@@ -699,9 +718,11 @@ else if (arrayKeysExists(["estado", "tipo", "id"], $_REQUEST) && checkKeysValues
                 <input type='hidden' name='updateState' value='updating'>
                 <input type='hidden' name='allowedId' value='{$_REQUEST["id"]}'>
                 <p>Clique em <strong>Submeter</strong> para atualizar os dados</p>
-                <hr><button class='button-33' type='submit'>Submeter</button></form>";
-
-                voltar_atras();
+                <hr>
+                <div class='button-container'>
+                    <button class='button-33' type='submit'>Submeter</button></form>
+                    " . goBackToOriginalPage("gestao-de-valores-permitidos") . "
+                </div>";
 
                 $_SESSION["allowedValueUpdated"] = false;
             }
@@ -716,16 +737,16 @@ else if (arrayKeysExists(["estado", "tipo", "id"], $_REQUEST) && checkKeysValues
         // Checks whether the item type received is valid or not
         if (empty($_REQUEST["state"]) || $_REQUEST["state"] != "active") {
             $validForm = false;
-            $invalidFields .= "<p>Estado do valor permitido é invalido</p>";
+            $invalidFields .= "<li class='list'>Estado do valor permitido é invalido</li>";
         }
         // Checks whether the item id received is valid or not
         if (empty($_REQUEST["allowedId"]) || !is_numeric($_REQUEST["allowedId"]) || $_REQUEST["id"] != $_REQUEST["allowedId"]) {
             $validForm = false;
-            $invalidFields .= "<p>O id do subitem é invalido</p>";
+            $invalidFields .= "<li class='list'>O id do subitem é invalido</li>";
         }
         // Checks if there were any errors in the server side verification
         if (!$validForm) {
-            echo $invalidFields;
+            echo "<div class='error-div'>$invalidFields</div><hr>";
             voltar_atras();
         } // if there were no problems update the database
         else {
@@ -752,7 +773,9 @@ else if (arrayKeysExists(["estado", "tipo", "id"], $_REQUEST) && checkKeysValues
                     voltar_atras();
                 } else {
 
-                    echo "<p>Atualização realizada com sucesso</p>
+                    echo "<div class='contorno'>
+                            <p class='success'>Atualização realizada com sucesso</p>
+                          </div>
                           <p>Clique em continuar para voltar a pagina de gestao de valores permitidos</p>
                           <hr><a href='" . get_site_url() . "/gestao-de-valores-permitidos'><button class='button-33'>Continuar</button></a>";
 
@@ -820,7 +843,11 @@ else if (arrayKeysExists(["estado", "tipo", "id"], $_REQUEST) && checkKeysValues
             <input type='hidden' name='updateState' value='activating'>
             <input type='hidden' name='allowedId' value='{$_REQUEST["id"]}'>
             <p>Clique em <strong>Submeter</strong> para atualizar os dados</p>
-            <hr><button class='button-33' type='submit'>Submeter</button></form>";
+            <hr>
+            <div class='button-container'>
+                <button class='button-33' type='submit'>Submeter</button></form>
+                " . goBackToOriginalPage("gestao-de-valores-permitidos") . "
+            </div>";
 
             voltar_atras();
 
@@ -838,18 +865,18 @@ else if (arrayKeysExists(["estado", "tipo", "id"], $_REQUEST) && checkKeysValues
         // Checks whether the item type received is valid or not
         if (empty($_REQUEST["state"]) || $_REQUEST["state"] != "inactive") {
             $validForm = false;
-            $invalidFields .= "<p>Estado do valor permitido é invalido</p>";
+            $invalidFields .= "<li class='list'>Estado do valor permitido é invalido</li>";
         }
 
         // Checks whether the item id received is valid or not
         if (empty($_REQUEST["allowedId"]) || !is_numeric($_REQUEST["allowedId"]) || $_REQUEST["id"] != $_REQUEST["allowedId"]) {
             $validForm = false;
-            $invalidFields .= "<p>O id do subitem é invalido</p>";
+            $invalidFields .= "<li class='list'>O id do subitem é invalido</li>";
         }
 
         // Checks if there were any errors in the server side verification
         if (!$validForm) {
-            echo $invalidFields;
+            echo "<div class='error-div'>$invalidFields</div><hr>";
             voltar_atras();
         } // if there were no problems update the database
         else {
@@ -876,7 +903,9 @@ else if (arrayKeysExists(["estado", "tipo", "id"], $_REQUEST) && checkKeysValues
                     voltar_atras();
                 } else {
 
-                    echo "<p>Atualização realizada com sucesso</p>
+                    echo "<div class='contorno'>
+                            <p class='success'>Atualização realizada com sucesso</p>
+                          </div>
                           <p>Clique em continuar para voltar a pagina de gestao de itens</p>
                           <hr><a href='" . get_site_url() . "/gestao-de-valores-permitidos'><button class='button-33'>Continuar</button></a>";
 
@@ -902,15 +931,15 @@ else if (arrayKeysExists(["estado", "tipo", "id"], $_REQUEST) && checkKeysValues
     } else {
 
         echo "<strong>Pretende desativar o valor permitido?</strong>
-          <table class='content-table'>
-          <thead>
-            <tr>
-                <th>id</th>
-                <th>subitem_id</th>
-                <th>value</th>
-                <th>state</th>
-            </tr>
-          </thead>";
+              <table class='content-table'>
+              <thead>
+                <tr>
+                    <th>id</th>
+                    <th>subitem_id</th>
+                    <th>value</th>
+                    <th>state</th>
+                </tr>
+              </thead>";
 
         // Fetching the subitem_id, value, state for the allowed_value requested using prepared statements to prevent sql injections
         $allowedValueQuery = mysqli_prepare($link, "SELECT subitem_allowed_value.subitem_id AS subId,subitem_allowed_value.value , subitem_allowed_value.state FROM subitem_allowed_value WHERE subitem_allowed_value.id = ? ");
@@ -945,7 +974,11 @@ else if (arrayKeysExists(["estado", "tipo", "id"], $_REQUEST) && checkKeysValues
             <input type='hidden' name='updateState' value='deactivating'>
             <input type='hidden' name='allowedId' value='{$_REQUEST["id"]}'>
             <p>Clique em <strong>Submeter</strong> para atualizar os dados</p>
-            <hr><button class='button-33' type='submit'>Submeter</button>";
+            <hr>
+            <div class='button-container'>
+                <button class='button-33' type='submit'>Submeter</button></form>
+                " . goBackToOriginalPage("gestao-de-valores-permitidos") . "
+            </div>";
 
             $_SESSION["allowedValueUpdated"] = false;
 
@@ -960,12 +993,12 @@ else if (arrayKeysExists(["estado", "tipo", "id"], $_REQUEST) && checkKeysValues
         // Checks whether the item id received is valid or not
         if (empty($_REQUEST["allowedId"]) || !is_numeric($_REQUEST["allowedId"]) || $_REQUEST["id"] != $_REQUEST["allowedId"]) {
             $validForm = false;
-            $invalidFields .= "<p>O id do subitem é invalido</p>";
+            $invalidFields .= "<li class='list'>O id do subitem é invalido</li>";
         }
 
         // Checks if there were any errors in the server side verification
         if (!$validForm) {
-            echo $invalidFields;
+            echo "<div class='error-div'>$invalidFields</div><hr>";
             voltar_atras();
         } // if there were no problems update the database
         else {
@@ -992,7 +1025,9 @@ else if (arrayKeysExists(["estado", "tipo", "id"], $_REQUEST) && checkKeysValues
                     voltar_atras();
                 } else {
 
-                    echo "<p>Eliminições realizadas com sucesso</p>
+                    echo "<div class='contorno'>
+                            <p class='success'>Eliminações realizadas com sucesso</p>
+                          </div>
                           <p>Clique em continuar para voltar a pagina de gestao de itens</p>
                           <hr><a href='" . get_site_url() . "/gestao-de-valores-permitidos'><button class='button-33'>Continuar</button></a>";
 
@@ -1016,16 +1051,16 @@ else if (arrayKeysExists(["estado", "tipo", "id"], $_REQUEST) && checkKeysValues
             }
         }
     } else {
-        echo " <strong>Estamos prestes a apagar os dados abaixo da base de dados . Confirma que pertende apagar os mesmos ?</strong>
-          <table class='content-table' >
-          <thead>
-            <tr>
-                <th>id</th>
-                <th>subitem_id</th>
-                <th>value</th>
-                <th>state</th>
-            </tr>
-          </thead> ";
+        echo "<strong>Estamos prestes a apagar os dados abaixo da base de dados . Confirma que pertende apagar os mesmos ?</strong>
+              <table class='content-table'>
+              <thead>
+                <tr>
+                    <th>id</th>
+                    <th>subitem_id</th>
+                    <th>value</th>
+                    <th>state</th>
+                </tr>
+              </thead>";
 
         // Fetching the subitem_id, value, state for the allowed_value requested using prepared statements to prevent sql injections
         $allowedValueQuery = mysqli_prepare($link, "SELECT subitem_allowed_value . subitem_id as subId,subitem_allowed_value . value , subitem_allowed_value . state FROM subitem_allowed_value WHERE subitem_allowed_value.id = ? ");
@@ -1048,20 +1083,22 @@ else if (arrayKeysExists(["estado", "tipo", "id"], $_REQUEST) && checkKeysValues
             echo "
             <tbody>
                 <tr>
-                    <td ><strong >{$_REQUEST["id"]}</strong ></td >
-                    <td ><strong >{$allowedValueData["subId"]}</strong ></td >
-                    <td ><strong >{$allowedValueData["value"]}</strong ></td >
-                    <td ><strong >{$allowedValueData["state"]}</strong ></td >
+                    <td><strong >{$_REQUEST["id"]}</strong></td >
+                    <td><strong >{$allowedValueData["subId"]}</strong></td>
+                    <td><strong >{$allowedValueData["value"]}</strong></td>
+                    <td><strong >{$allowedValueData["state"]}</strong></td>
                 </tr>
-            </tbody >
-            </table >
+            </tbody>
+            </table>
             <form method = 'post' action = '" . get_permalink() . basename($_SERVER["REQUEST_URI"]) . "' >
             <input type = 'hidden' name = 'updateState' value = 'deleting' >
             <input type='hidden' name='allowedId' value='{$_REQUEST["id"]}'>
-            <p > Clique em < strong>Submeter </strong > para apagar os dados </p >
-            <hr ><button class='button-33' type = 'submit' > Submeter</button ></form > ";
-
-            voltar_atras();
+            <p> Clique em <strong>Submeter </strong> para apagar os dados </p>
+            <hr>
+            <div class='button-container'>
+                <button class='button-33' type='submit'>Submeter</button></form>
+                " . goBackToOriginalPage("gestao-de-valores-permitidos") . "
+            </div>";
 
             $_SESSION["allowedValueUpdated"] = false;
 
