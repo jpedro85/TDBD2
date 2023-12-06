@@ -6,24 +6,33 @@ if(!is_user_logged_in() && current_user_can('manage_subitems')){
     echo 'O Utilizador não tem permissões para aceder à página';
 }else {
     echo 2;
+    $listUNIT= '';
+    $lista = '';
+    $estado = isset($_REQUEST["estado"]) ? $_REQUEST["estado"] : '';
     $pattern = '/^[a-zA-Z0-9\s]+$/';
     $camposF = '<h3><b>Gestão de subitens - inserção</b></h3><br>';
     $erro = false;
-    if ($_REQUEST["estado"] == "inserir") {//caso o hidden estado esteja a inserir vai aparecer esta parte do código
-// Verificação do subitem name
-        if (empty($_REQUEST["ITname"]) || is_numeric($_REQUEST["ITname"]) || !preg_match($pattern, $_REQUEST["ITname"])) {
+    if ($estado == "inserir") {//caso o hidden estado esteja a inserir vai aparecer esta parte do código
+        //Verifica se as variáveis estão atribuidas ao array $_REQUEST, caso contrário é atribuido o valor de ''
+        $ITname = isset($_REQUEST["ITname"]) ? $_REQUEST["ITname"] : '';
+        $Eitem = isset($_REQUEST["Eitem"]) ? $_REQUEST["Eitem"] : '';
+        $slctunit = isset($_REQUEST["slctunit"]) ? $_REQUEST["slctunit"] : '';
+        $formCamp = isset($_REQUEST["formCamp"]) ? $_REQUEST["formCamp"] : '';
+        $mandatory = isset($_REQUEST["mandatory"]) ? $_REQUEST["mandatory"] : '';
+        // Verificação do subitem name
+        if (empty($ITname) || is_numeric($ITname) || !preg_match($pattern, $ITname)) {
             $camposF .= '<li class="list">Falta inserir o nome do subitem, ou este é numérico</li><br>';
             $erro = true;
         }
 // Verificação do nome do item
-        if (empty($_REQUEST["Eitem"])) {
+        if (empty($Eitem)) {
             $camposF .= '<li class="list">Falta fazer a escolha do item, é obrigatório </li><br>';
             $erro = true;
         }
 // Verificar se a unidade foi selecionada, caso contrário, ficará como "----" na BD
-        $_REQUEST["slctunit"] = empty($_REQUEST["slctunit"]) ? "----" : $_REQUEST["slctunit"];
+        $slctunit = empty($slctunit) ? "----" : $slctunit;
 // Verificação do campo de form
-        if ($_REQUEST["formCamp"] == 0) {
+        if ($formCamp == 0) {
             $camposF .= '<li class="list">Tem que inserir um valor maior que 0</li>';
             $erro = true;
         }
@@ -38,24 +47,24 @@ if(!is_user_logged_in() && current_user_can('manage_subitems')){
             </noscript>";
         }else {
             echo '<form> 
-             <input type="hidden" name="ITname" value="' . $_REQUEST["ITname"] . '">
-             <input type="hidden" name="Eitem" value="' . $_REQUEST["Eitem"] . '">
-             <input type="hidden" name="slctunit" value="' . $_REQUEST["slctunit"] . '">
-             <input type="hidden" name="formCamp" value="' . $_REQUEST["formCamp"] . '">
-             <input type="hidden" name="mandatory" value="' . $_REQUEST["mandatory"] . '">
+             <input type="hidden" name="ITname" value="' . $ITname . '">
+             <input type="hidden" name="Eitem" value="' . $Eitem . '">
+             <input type="hidden" name="slctunit" value="' . $slctunit . '">
+             <input type="hidden" name="formCamp" value="' . $formCamp . '">
+             <input type="hidden" name="mandatory" value="' . $mandatory . '">
              </form>';
 
 //Iserção da dados na Base de Dados
-            $itemQuery = mysqli_query($link, "SELECT name as itemName, id FROM item WHERE id = " . $_REQUEST["Eitem"]);
+            $itemQuery = mysqli_query($link, "SELECT name as itemName, id FROM item WHERE id = " . $Eitem);
             $itemFetch = mysqli_fetch_assoc($itemQuery);
 
 // Obtendo o ID do subitem
-            $subItemQuery = mysqli_query($link, "SELECT id as subItemID FROM subitem WHERE name = '" . $_REQUEST["ITname"] . "'");
+            $subItemQuery = mysqli_query($link, "SELECT id as subItemID FROM subitem WHERE name = '" . $ITname . "'");
             $subItemFetch = mysqli_fetch_assoc($subItemQuery);
 
 // transformaçao do nome de campo de formulário com o id
             $tresLetras = substr("'" . $itemFetch["itemName"] . "'", 1, 3);
-            $formFieldName = $tresLetras . "-" . $_REQUEST["ITname"];
+            $formFieldName = $tresLetras . "-" . $ITname;
 
 //Query de Inserção
             $insertQuery = "INSERT INTO subitem(id, name, item_id, value_type, form_field_name, form_field_type, unit_type_id, form_field_order, mandatory, state) VALUES 
@@ -73,14 +82,12 @@ if(!is_user_logged_in() && current_user_can('manage_subitems')){
                 $queryAtualiFetch = mysqli_fetch_assoc($queryAtuali);*/
                 //Vai me dar o novo ID inserido na Base de Dados
                 // Exibindo mensagem de sucesso e botão para continuar
-
                 echo '<li><b class="success">Os dados foram inseridos com sucesso</b><br>Clique em Continuar para AVANÇAR!</li>
         <a href=' . $current_page . ' ><button>Continuar</button></a>';
                 $NewID = mysqli_insert_id($link);
                 $NewFormFName = $tresLetras . "-" . $NewID . "-" . $_REQUEST["ITname"];
                 $updateQuery = "UPDATE subitem SET form_field_name = '" . $NewFormFName . "' WHERE id = " . $NewID;
             }
-
         }
     }else{
         echo '<table class="content-table">
@@ -130,9 +137,9 @@ if(!is_user_logged_in() && current_user_can('manage_subitems')){
                  <td>' . $lineSubItem["SubFFO"] . '</td>
                  <td>' . $lineSubItem["mandatory"] . '</td>
                  <td>' . $lineSubItem["state"] . '</td>
-                 <td><a class="links" href="http://localhost/sgbd/edicao-de-dados/">[editar]</a><br>
-                     <a class="links" href="http://localhost/sgbd/edicao-de-dados/">[desativar]</a><br>
-                     <a class="links" href="http://localhost/sgbd/edicao-de-dados/">[apagar]</a>
+                 <td><a  class="links" href="http://localhost/sgbd/edicao-de-dados/">[editar]</a><br>
+                     <a  class="links"  href="http://localhost/sgbd/edicao-de-dados/">[desativar]</a><br>
+                     <a  class="links" href="http://localhost/sgbd/edicao-de-dados/">[apagar]</a>
                  </td>
                  </tr>';
                 }
@@ -156,11 +163,14 @@ if(!is_user_logged_in() && current_user_can('manage_subitems')){
             <p>Inserção do tipo de dados: </p>';
         $value_types = get_enum_values($link, "subitem", "value_type");
         foreach ($value_types as $v) {
-            echo '<input type="radio" name="valueT" value="' . $v . '" checked >' . $v . '<br>';
+            echo '<label class="checkBox">
+                    <input type="radio" name="valueT" value="' . $v . '" checked >
+                    <span class="checkmark"></span>' . $v . '
+                  </label><br>';
         }
         ?>
             <p>Escolha o Item: (Obrigatório!)</p>
-            <select id="slctItems" name="Eitem">
+            <select class="box" id="slctItems" name="Eitem">
                 <option value=""></option>
                 <?= $lista ?>
             </select>
@@ -168,7 +178,9 @@ if(!is_user_logged_in() && current_user_can('manage_subitems')){
             <?php
             $formf_types = get_enum_values($link, "subitem", "form_field_type");
             foreach ($formf_types as $f) {
-                echo '<input type="radio" name="formTYPE" value="' . $f . '">' . $f . '<br>';
+                echo '<label class="checkBox">
+                        <input type="radio" name="formTYPE" value="' . $f . '"><span class="checkmark"></span>' . $f . '
+                      </label><br>';
             }
             ?>
             <p>Escolha o tipo de unidade</p>

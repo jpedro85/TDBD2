@@ -4,10 +4,11 @@ require_once("custom/php/common.php");
 if(!is_user_logged_in() & current_user_can('manage_unit_types')){
     echo 'O Utilizador não tem permissões para aceder à página';
 }else{
+    $estado = isset($_REQUEST["estado"]) ? $_REQUEST["estado"] : '';
     $pattern = '/^[a-zA-Z0-9\s]+$/';
     $camposF="";
     $erro = false;
-    if ($_REQUEST["estado"] == "inserir") {//caso o hidden estado esteja a inserir vai aparecer esta parte do código
+    if ($estado == "inserir") {//caso o hidden estado esteja a inserir vai aparecer esta parte do código
 
         $camposF .= '<h3><b>Gestão de subitens - inserção</b></h3>
         <br>';
