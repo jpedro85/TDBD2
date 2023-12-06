@@ -564,7 +564,7 @@ else if (arrayKeysExists(["estado", "tipo", "id"], $_REQUEST) && checkKeysValues
         $subId = htmlspecialchars($subId);
 
         // Check itemName received is empty or just numbers
-        if (empty($allowedValue) || is_numeric($allowedValue)) {
+        if (empty($allowedValue) || is_numeric($allowedValue) || containsOnlySpecialChars($allowedValue)) {
             $validForm = false;
             $invalidFields .= "<p>Nome do valor permitido é inválid</p>";
         }
@@ -1084,6 +1084,7 @@ function checkKeysValues(array $keys, array $arrayToCheck, array $values): bool
 {
     $containsValues = true;
     // checking if the keys array size is the same ad the values array
+
     if (count($keys) != count($values)) {
         return false;
     }
