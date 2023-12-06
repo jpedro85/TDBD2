@@ -81,6 +81,10 @@ function voltar_atras()
 
 }
 
+function goBackToOriginalPage(string $originalPageName){
+    return "<a href='" . get_site_url() . "/$originalPageName'><button type='button' class='button-33'>Voltar Atrás</button></a>";
+}
+
 function containsOnlySpecialChars($str) {
     // Use a regular expression to check if the string contains only special characters
     // Checks if there is more than um char that's either lowercase or uppercase

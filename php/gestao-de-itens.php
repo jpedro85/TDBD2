@@ -102,10 +102,10 @@ if (!doesUserHavePermission("manage_items")) {
                                     </thead>
                                     <tbody>
                                         <tr>
-                                            <td>" . mysqli_insert_id($link) . "</td>
-                                            <td>$itemName</td>
-                                            <td>{$_REQUEST["typeName"]}</td>
-                                            <td>{$_REQUEST["state"]}</td>
+                                            <td><strong>" . mysqli_insert_id($link) . "</strong></td>
+                                            <td><strong>$itemName</strong></td>
+                                            <td><strong>{$_REQUEST["typeName"]}</strong></td>
+                                            <td><strong>{$_REQUEST["state"]}</strong></td>
                                         </tr> 
                                     </tbody>
                               </table>
@@ -123,7 +123,7 @@ if (!doesUserHavePermission("manage_items")) {
                     echo "<div class='error-div'>
                             <strong class='list'>O item já foi inserido</strong>
                           </div>
-                          <a href='$current_page'><button class='button'>Continuar</button></a>";
+                          <a href='$current_page'><button class='button-33'>Continuar</button></a>";
 
                 } // If it didn't pass all the other checks it means an error occurred on the transaction start
                 else {
