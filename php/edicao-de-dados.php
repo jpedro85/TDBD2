@@ -9,12 +9,15 @@ if (arrayKeysExists(["estado", "tipo", "id"], $_REQUEST) && checkKeysValues(["es
         $validForm = true;
         $invalidFields = "";
 
-        // Trim the received values, so it has no spaces in the edges
+        // Trim the received values, so it has no spaces in the edges and is not a html special char
         $itemName = (isset($_REQUEST["itemName"])) ? trim($_REQUEST["itemName"]) : "";
+        $itemName = htmlspecialchars($itemName);
+
         $typeId = (isset($_REQUEST["typeId"])) ? trim($_REQUEST["typeId"]) : "";
+        $typeId = htmlspecialchars($typeId);
 
         // Check itemName received is empty or just numbers
-        if (empty($itemName) || is_numeric($itemName)) {
+        if (empty($itemName) || is_numeric($itemName) || containsOnlySpecialChars($itemName)) {
             $validForm = false;
             $invalidFields .= "<p>Nome do item é invalido</p>";
         }
@@ -23,6 +26,12 @@ if (arrayKeysExists(["estado", "tipo", "id"], $_REQUEST) && checkKeysValues(["es
             $validForm = false;
             $invalidFields .= "<p>Id do tipo de item é invalido</p>";
         }
+        // Checks whether the item id received is valid or not
+        if (empty($_REQUEST["id"]) || !is_numeric($_REQUEST["id"]) || $_REQUEST["id"] != $_REQUEST["itemId"]) {
+            $validForm = false;
+            $invalidFields .= "<p>O id do Item é invalido</p>";
+        }
+
         // Checks if there were any errors in the server side verification
         if (!$validForm) {
             echo $invalidFields;
@@ -30,16 +39,25 @@ if (arrayKeysExists(["estado", "tipo", "id"], $_REQUEST) && checkKeysValues(["es
         }// if there were no problems update the database
         else {
             if (!$_SESSION["itemUpdated"] && mysqli_begin_transaction($link)) {
+                // Using prepared statements here so to protect against sql injections if the values were properly sanitized
 
-                $updateItemQuery = "UPDATE item SET name = '$itemName', item_type_id = '$typeId' WHERE item.id = {$_REQUEST["id"]}";
-                $updateItemResult = mysqli_query($link, $updateItemQuery);
+                // Updating the correct value on the tables using prepared statements
+                $updateItemQuery = mysqli_prepare($link, "UPDATE item SET name = ?, item_type_id = ? WHERE item.id = ?");
+                mysqli_stmt_bind_param($updateItemQuery, "sss", $itemName, $typeId, $_REQUEST["id"]);
+
+                // Gets the result of the query execution
+                $updateItemResult = mysqli_stmt_execute($updateItemQuery);
+
                 // checking whether the query was successful or not
                 if (!$updateItemResult) {
+
+                    // Gets the error that happened in the prepared statement and outputs the value in htmlspecialchars
+                    $error = mysqli_stmt_error($updateItemQuery);
 
                     mysqli_rollback($link);
 
                     echo "<div class='error-div'>
-                           <strong class='list' >Ocorreu um erro na Atualização de dados: " . mysqli_error($link) . "</strong>
+                           <strong class='list' >Ocorreu um erro na Atualização de dados: " . htmlspecialchars($error) . "</strong>
                           </div>";
 
                     voltar_atras();
@@ -48,7 +66,8 @@ if (arrayKeysExists(["estado", "tipo", "id"], $_REQUEST) && checkKeysValues(["es
                     echo "<p>Atualizações realizadas com sucesso</p>
                           <p>Clique em continuar para voltar a pagina de gestao de itens</p>
                           <hr><a href='" . get_site_url() . "/gestao-de-itens'><button class='button-33'>Continuar</button></a>";
-                    // Commit the transaction
+
+                    // Commits the transaction
                     mysqli_commit($link);
                     $_SESSION["itemUpdated"] = true;
                 }
@@ -58,10 +77,11 @@ if (arrayKeysExists(["estado", "tipo", "id"], $_REQUEST) && checkKeysValues(["es
                          <b class='list'>Os dados ja foram atualizados</b>
                       </div>
                         <a href='" . get_site_url() . "/gestao-de-itens'><button class='button-33'>Continuar</button></a>";
-            } else {
+            }// If it doesn't pass all checks it means an error occurred starting the transaction
+            else {
 
                 echo "<div class='error-div'>
-                        <strong class='list' >Ocorreu um erro na Atualização de dados: " . mysqli_error($link) . "</strong>
+                        <strong class='list' >Ocorreu um erro no começo da Atualização de dados: " . mysqli_error($link) . "</strong>
                       </div>";
 
                 voltar_atras();
@@ -80,22 +100,29 @@ if (arrayKeysExists(["estado", "tipo", "id"], $_REQUEST) && checkKeysValues(["es
             </tr>
           </thead>";
 
-        // Fetching the id, name, item_type, state for the item requested
-        $itemQuery = "SELECT item.name AS itemName,item.item_type_id AS typeId , item.state FROM item WHERE item.id = {$_REQUEST["id"]}";
-        $itemQueryResult = mysqli_query($link, $itemQuery);
+        // Fetching the id, name, item_type, state for the item requested using prepared statements to prevent sql injection
+        $itemQuery = mysqli_prepare($link, "SELECT item.name AS itemName,item.item_type_id AS typeId , item.state FROM item WHERE item.id = ?");
+        mysqli_stmt_bind_param($itemQuery, "s", $_REQUEST["id"]);
+
+        // Gets the result of the query execution
+        $itemQueryResult = mysqli_stmt_execute($itemQuery);
 
         // Checking if the query was successful
         if (!$itemQueryResult) {
 
+            // Gets the error that happened in the prepared statement and outputs the value in htmlspecialchars
+            $error = mysqli_stmt_error($itemQuery);
+
             echo "<div class='error-div'>
-                    <strong class='list' >Ocorreu um erro na consulta:" . mysqli_error($link) . "</strong>
+                    <strong class='list' >Ocorreu um erro na consulta:" . htmlspecialchars($error) . "</strong>
                   </div>";
 
             voltar_atras();
         } else {
+            $itemQueryResult = mysqli_stmt_get_result($itemQuery);
             $itemData = mysqli_fetch_assoc($itemQueryResult);
 
-            // Fetching all item_type id for a dropdown box so we can choose the id more easily without needing mental mapping of the database
+            // Fetching all item_type id for a dropdown box so that we can choose the id more easily without needing mental mapping of the database
             $itemTypeQuery = "SELECT id as typeId FROM item_type";
             $itemTypeQueryResult = mysqli_query($link, $itemTypeQuery);
 
@@ -131,6 +158,7 @@ if (arrayKeysExists(["estado", "tipo", "id"], $_REQUEST) && checkKeysValues(["es
                 </tbody>
                 </table>
                 <input type='hidden' name='updateState' value='updating'>
+                <input type='hidden' name='itemId' value='{$_REQUEST["id"]}'>
                 <p>Clique em <strong>Submeter</strong> para atualizar os dados</p>
                 <hr><button class='button-33' type='submit'>Submeter</button></form>";
 
@@ -152,6 +180,12 @@ if (arrayKeysExists(["estado", "tipo", "id"], $_REQUEST) && checkKeysValues(["es
             $invalidFields .= "<p>Estado do item é invalido</p>";
         }
 
+        // Checks whether the item id received is valid or not
+        if (empty($_REQUEST["id"]) || !is_numeric($_REQUEST["id"]) || $_REQUEST["id"] != $_REQUEST["itemId"]) {
+            $validForm = false;
+            $invalidFields .= "<p>O id do Item é invalido</p>";
+        }
+
         // Checks if there were any errors in the server side verification
         if (!$validForm) {
             echo $invalidFields;
@@ -159,16 +193,24 @@ if (arrayKeysExists(["estado", "tipo", "id"], $_REQUEST) && checkKeysValues(["es
         } // if there were no problems update the database
         else {
             if (!$_SESSION["itemUpdated"] && mysqli_begin_transaction($link)) {
+                // Using prepared statements here so to protect against sql injections if the values were properly sanitized
 
-                $updateItemQuery = "UPDATE item SET state='active' WHERE item.id = {$_REQUEST["id"]}";
-                $updateItemResult = mysqli_query($link, $updateItemQuery);
+                // Updating the correct value on the tables using prepared statements
+                $updateItemQuery = mysqli_prepare($link, "UPDATE item SET state='active' WHERE item.id = ? ");
+                mysqli_stmt_bind_param($updateItemQuery, "s", $_REQUEST["id"]);
+
+                // Gets the result of the query execution
+                $updateItemResult = mysqli_stmt_execute($updateItemQuery);
 
                 // checking whether the query was successful or not
                 if (!$updateItemResult) {
+                    // Gets the error that happened in the prepared statement and outputs the value in htmlspecialchars
+                    $error = mysqli_stmt_error($updateItemQuery);
+
                     mysqli_rollback($link);
 
                     echo "<div class='error-div'>
-                           <strong class='list' >Ocorreu um erro na Atualização de dados: " . mysqli_error($link) . "</strong>
+                           <strong class='list' >Ocorreu um erro na Atualização de dados: " . htmlspecialchars($error) . "</strong>
                           </div>";
 
                     voltar_atras();
@@ -191,7 +233,7 @@ if (arrayKeysExists(["estado", "tipo", "id"], $_REQUEST) && checkKeysValues(["es
             } else {
 
                 echo "<div class='error-div'>
-                        <strong class='list' >Ocorreu um erro na Atualização de dados: " . mysqli_error($link) . "</strong>
+                        <strong class='list' >Ocorreu um erro no começo da Atualização de dados: " . mysqli_error($link) . "</strong>
                       </div>";
 
                 voltar_atras();
@@ -209,19 +251,26 @@ if (arrayKeysExists(["estado", "tipo", "id"], $_REQUEST) && checkKeysValues(["es
             </tr>
           </thead>";
 
-        // Fetching the id, name, item_type, state for the item requested
-        $itemQuery = "SELECT item.name AS itemName,item.item_type_id AS typeId , item.state FROM item WHERE item.id = {$_REQUEST["id"]}";
-        $itemQueryResult = mysqli_query($link, $itemQuery);
+        // Fetching the id, name, item_type, state for the item requested using prepared statements to prevent sql injection
+        $itemQuery = mysqli_prepare($link, "SELECT item.name AS itemName,item.item_type_id AS typeId , item.state FROM item WHERE item.id = ? ");
+        mysqli_stmt_bind_param($itemQuery, "s", $_REQUEST["id"]);
+
+        // Gets the result of the query execution
+        $itemQueryResult = mysqli_stmt_execute($itemQuery);
 
         if (!$itemQueryResult) {
 
+            // Gets the error that happened in the prepared statement and outputs the value in htmlspecialchars
+            $error = mysqli_stmt_error($itemQuery);
+
             echo "<div class='error-div'>
-                    <strong class='list' >Ocorreu um erro na consulta:" . mysqli_error($link) . "</strong>
+                    <strong class='list' >Ocorreu um erro na consulta:" . htmlspecialchars($error) . "</strong>
                   </div>";
 
             voltar_atras();
         } else {
 
+            $itemQueryResult = mysqli_stmt_get_result($itemQuery);
             $itemData = mysqli_fetch_assoc($itemQueryResult);
 
             echo "
@@ -237,6 +286,7 @@ if (arrayKeysExists(["estado", "tipo", "id"], $_REQUEST) && checkKeysValues(["es
             <form method='post' action='" . get_permalink() . basename($_SERVER["REQUEST_URI"]) . "'>
             <input type='hidden' name='state' value='active'>
             <input type='hidden' name='updateState' value='activating'>
+            <input type='hidden' name='itemId' value='{$_REQUEST["id"]}'>
             <p>Clique em <strong>Submeter</strong> para atualizar os dados</p>
             <hr><button class='button-33' type='submit'>Submeter</button></form>";
 
@@ -259,6 +309,12 @@ else if (arrayKeysExists(["estado", "tipo", "id"], $_REQUEST) && checkKeysValues
             $invalidFields .= "<p>Estado do item é invalido</p>";
         }
 
+        // Checks whether the item id received is valid or not
+        if (empty($_REQUEST["id"]) || !is_numeric($_REQUEST["id"]) || $_REQUEST["id"] != $_REQUEST["itemId"]) {
+            $validForm = false;
+            $invalidFields .= "<p>O id do Item é invalido</p>";
+        }
+
         // Checks if there were any errors in the server side verification
         if (!$validForm) {
             echo $invalidFields;
@@ -266,16 +322,24 @@ else if (arrayKeysExists(["estado", "tipo", "id"], $_REQUEST) && checkKeysValues
         } // if there were no problems update the database
         else {
             if (!$_SESSION["itemUpdated"] && mysqli_begin_transaction($link)) {
+                // Using prepared statements here so to protect against sql injections if the values were properly sanitized
 
-                $updateItemQuery = "UPDATE item SET state='inactive' WHERE item.id = {$_REQUEST["id"]}";
-                $updateItemResult = mysqli_query($link, $updateItemQuery);
+                // Updating the correct value on the tables using prepared statements
+                $updateItemQuery = mysqli_prepare($link, "UPDATE item SET state='inactive' WHERE item.id = ? ");
+                mysqli_stmt_bind_param($updateItemQuery, "s", $_REQUEST["id"]);
+
+                // Gets the result of the query execution
+                $updateItemResult = mysqli_stmt_execute($updateItemQuery);
 
                 // checking whether the query was successful or not
                 if (!$updateItemResult) {
+                    // Gets the error that happened in the prepared statement and outputs the value in htmlspecialchars
+                    $error = mysqli_stmt_error($updateItemQuery);
+
                     mysqli_rollback($link);
 
                     echo "<div class='error-div'>
-                           <strong class='list' >Ocorreu um erro na Atualização de dados: " . mysqli_error($link) . "</strong>
+                           <strong class='list' >Ocorreu um erro na Atualização de dados: " . htmlspecialchars($error) . "</strong>
                           </div>";
 
                     voltar_atras();
@@ -298,7 +362,7 @@ else if (arrayKeysExists(["estado", "tipo", "id"], $_REQUEST) && checkKeysValues
             } else {
 
                 echo "<div class='error-div'>
-                        <strong class='list' >Ocorreu um erro na Atualização de dados: " . mysqli_error($link) . "</strong>
+                        <strong class='list' >Ocorreu um erro no começo da Atualização de dados: " . mysqli_error($link) . "</strong>
                       </div>";
 
                 voltar_atras();
@@ -317,18 +381,27 @@ else if (arrayKeysExists(["estado", "tipo", "id"], $_REQUEST) && checkKeysValues
             </tr>
           </thead>";
 
-        // Fetching the id, name, item_type, state for the item requested
-        $itemQuery = "SELECT item.name AS itemName,item.item_type_id AS typeId , item.state FROM item WHERE item.id = {$_REQUEST["id"]}";
-        $itemQueryResult = mysqli_query($link, $itemQuery);
+        // Fetching the id, name, item_type, state for the item requested using prepared statements to prevent sql injection
+        $itemQuery = mysqli_prepare($link, "SELECT item.name AS itemName,item.item_type_id AS typeId , item.state FROM item WHERE item.id = ? ");
+        mysqli_stmt_bind_param($itemQuery, "s", $_REQUEST["id"]);
+
+        // Gets the result of the query execution
+        $itemQueryResult = mysqli_stmt_execute($itemQuery);
+
+        // Checks whether the query was successful or not
         if (!$itemQueryResult) {
+            // Gets the error that happened in the prepared statement and outputs the value in htmlspecialchars
+            $error = mysqli_stmt_error($itemQuery);
+
+            mysqli_rollback($link);
 
             echo "<div class='error-div'>
-                    <strong class='list' >Ocorreu um erro na consulta:" . mysqli_error($link) . "</strong>
+                    <strong class='list' >Ocorreu um erro na consulta:" . htmlspecialchars($error) . "</strong>
                   </div>";
 
             voltar_atras();
         } else {
-
+            $itemQueryResult = mysqli_stmt_get_result($itemQuery);
             $itemData = mysqli_fetch_assoc($itemQueryResult);
 
             echo "
@@ -344,6 +417,7 @@ else if (arrayKeysExists(["estado", "tipo", "id"], $_REQUEST) && checkKeysValues
             <form method='post' action='" . get_permalink() . basename($_SERVER["REQUEST_URI"]) . "'>
             <input type='hidden' name='state' value='inactive'>
             <input type='hidden' name='updateState' value='deactivating'>
+            <input type='hidden' name='itemId' value='{$_REQUEST["id"]}'>
             <p>Clique em <strong>Submeter</strong> para atualizar os dados</p>
             <hr><button class='button-33' type='submit'>Submeter</button></form>";
 
@@ -355,43 +429,68 @@ else if (arrayKeysExists(["estado", "tipo", "id"], $_REQUEST) && checkKeysValues
     }
 } else if (arrayKeysExists(["estado", "tipo", "id"], $_REQUEST) && checkKeysValues(["estado", "tipo"], $_REQUEST, ["apagar", "item"])) {
     if (array_key_exists("updateState", $_REQUEST) && $_REQUEST["updateState"] == "deleting") {
-        if (!$_SESSION["itemUpdated"] && mysqli_begin_transaction($link)) {
+        // Server-side verifications, can be tested with postman
+        $validForm = true;
+        $invalidFields = "";
 
-            $deleteItemQuery = "DELETE FROM item WHERE item.id = {$_REQUEST["id"]}";
-            $deleteItemResult = mysqli_query($link, $deleteItemQuery);
+        // Checks whether the item id received is valid or not
+        if (empty($_REQUEST["id"]) || !is_numeric($_REQUEST["id"]) || $_REQUEST["id"] != $_REQUEST["itemId"]) {
+            $validForm = false;
+            $invalidFields .= "<p>O id do Item é invalido</p>";
+        }
 
-            // checking whether the query was successful or not
-            if (!$deleteItemResult) {
-                mysqli_rollback($link);
+        // Checks if there were any errors in the server side verification
+        if (!$validForm) {
+            echo $invalidFields;
+            voltar_atras();
+        } // if there were no problems update the database
+        else {
+            if (!$_SESSION["itemUpdated"] && mysqli_begin_transaction($link)) {
+                // Using prepared statements here so to protect against sql injections if the values were properly sanitized
 
-                echo "<div class='error-div'>
-                           <strong class='list' >Ocorreu um erro na Atualização de dados: " . mysqli_error($link) . "</strong>
+                // Updating the correct value on the tables using prepared statements
+                $deleteItemQuery = mysqli_prepare($link, "DELETE FROM item WHERE item.id = ? ");
+                mysqli_stmt_bind_param($deleteItemQuery, "s", $_REQUEST["id"]);
+
+                // Gets the result of the query execution
+                $deleteItemResult = mysqli_stmt_execute($deleteItemQuery);
+
+                // checking whether the query was successful or not
+                if (!$deleteItemResult) {
+                    // Gets the error that happened in the prepared statement and outputs the value in htmlspecialchars
+                    $error = mysqli_stmt_error($deleteItemQuery);
+
+                    mysqli_rollback($link);
+
+                    echo "<div class='error-div'>
+                           <strong class='list' >Ocorreu um erro na Atualização de dados: " . htmlspecialchars($error) . "</strong>
                           </div>";
 
-                voltar_atras();
-            } else {
+                    voltar_atras();
+                } else {
 
-                echo "<p>Eliminições realizadas com sucesso</p>
+                    echo "<p>Eliminições realizadas com sucesso</p>
                           <p>Clique em continuar para voltar a pagina de gestao de itens</p>
                           <hr><a href='" . get_site_url() . "/gestao-de-itens'><button class='button-33'>Continuar</button></a>";
 
-                // Commit the transaction
-                mysqli_commit($link);
-                $_SESSION["itemUpdated"] = true;
-            }
-        }// Checking if the item was already updated
-        else if ($_SESSION["itemUpdated"]) {
-            echo "<div class='error-div'>
+                    // Commit the transaction
+                    mysqli_commit($link);
+                    $_SESSION["itemUpdated"] = true;
+                }
+            }// Checking if the item was already updated
+            else if ($_SESSION["itemUpdated"]) {
+                echo "<div class='error-div'>
                     <b class='list'>Os dados ja foram atualizados</b>
                   </div>
                     <a href='" . get_site_url() . "/gestao-de-itens'><button class='button-33'>Continuar</button></a>";
-        } else {
+            } else {
 
-            echo "<div class='error-div'>
-                    <strong class='list' >Ocorreu um erro na Atualização de dados: " . mysqli_error($link) . "</strong>
+                echo "<div class='error-div'>
+                    <strong class='list' >Ocorreu um erro no começo de Atualização de dados: " . mysqli_error($link) . "</strong>
                   </div>";
 
-            voltar_atras();
+                voltar_atras();
+            }
         }
     } else {
         echo "<strong>Estamos prestes a apagar os dados abaixo da base de dados. Confirma que pertende apagar os mesmos?</strong>
@@ -405,19 +504,26 @@ else if (arrayKeysExists(["estado", "tipo", "id"], $_REQUEST) && checkKeysValues
             </tr>
           </thead>";
 
-        // Fetching the id, name, item_type, state for the item requested
-        $itemQuery = "SELECT item.name AS itemName,item.item_type_id AS typeId , item.state FROM item WHERE item.id = {$_REQUEST["id"]}";
-        $itemQueryResult = mysqli_query($link, $itemQuery);
+        // Fetching the id, name, item_type, state for the item requested using prepared statements to prevent sql injection
+        $itemQuery = mysqli_prepare($link, "SELECT item.name AS itemName,item.item_type_id AS typeId , item.state FROM item WHERE item.id = ? ");
+        mysqli_stmt_bind_param($itemQuery, "s", $_REQUEST["id"]);
+
+        // Gets the result of the query execution
+        $itemQueryResult = mysqli_stmt_execute($itemQuery);
 
         if (!$itemQueryResult) {
+            // Gets the error that happened in the prepared statement and outputs the value in htmlspecialchars
+            $error = mysqli_stmt_error($itemQuery);
+
+            mysqli_rollback($link);
 
             echo "<div class='error-div'>
-                    <strong class='list' >Ocorreu um erro na consulta:" . mysqli_error($link) . "</strong>
+                    <strong class='list' >Ocorreu um erro na consulta:" . htmlspecialchars($error) . "</strong>
                   </div>";
 
             voltar_atras();
         } else {
-
+            $itemQueryResult = mysqli_stmt_get_result($itemQuery);
             $itemData = mysqli_fetch_assoc($itemQueryResult);
 
             echo "
@@ -432,6 +538,7 @@ else if (arrayKeysExists(["estado", "tipo", "id"], $_REQUEST) && checkKeysValues
             </table>
             <form method='post' action='" . get_permalink() . basename($_SERVER["REQUEST_URI"]) . "'>
             <input type='hidden' name='updateState' value='deleting'>
+            <input type='hidden' name='itemId' value='{$_REQUEST["id"]}'>
             <p>Clique em <strong>Submeter</strong> para apagar os dados</p>
             <hr><button class='button-33' type='submit'>Submeter</button></form>";
 
@@ -451,17 +558,25 @@ else if (arrayKeysExists(["estado", "tipo", "id"], $_REQUEST) && checkKeysValues
 
         // Trim the received values, so it has no spaces in the edges
         $allowedValue = (isset($_REQUEST["allowedValue"])) ? trim($_REQUEST["allowedValue"]) : "";
+        $allowedValue = htmlspecialchars($allowedValue);
+
         $subId = (isset($_REQUEST["subId"])) ? trim($_REQUEST["subId"]) : "";
+        $subId = htmlspecialchars($subId);
 
         // Check itemName received is empty or just numbers
-        if (empty($allowedValue) || is_numeric($allowedValue)) {
+        if (empty($allowedValue) || is_numeric($allowedValue) || containsOnlySpecialChars($allowedValue)) {
             $validForm = false;
             $invalidFields .= "<p>Nome do valor permitido é inválid</p>";
         }
-        // Checks whether the item type received is valid or not
+        // Checks whether the subitem id received is valid or not
         if (empty($subId) || !is_numeric($subId) || !checkFieldExistsOnDatabase($link, $_REQUEST["subId"], "subitem", "id")) {
             $validForm = false;
             $invalidFields .= "<p>Id do subitem é invalido</p>";
+        }
+        // Checks whether the item id received is valid or not
+        if (empty($_REQUEST["allowedId"]) || !is_numeric($_REQUEST["allowedId"]) || $_REQUEST["id"] != $_REQUEST["allowedId"]) {
+            $validForm = false;
+            $invalidFields .= "<p>O id do subitem é invalido</p>";
         }
         // Checks if there were any errors in the server side verification
         if (!$validForm) {
@@ -470,15 +585,23 @@ else if (arrayKeysExists(["estado", "tipo", "id"], $_REQUEST) && checkKeysValues
         }// if there were no problems update the database
         else {
             if (!$_SESSION["allowedValueUpdated"] && mysqli_begin_transaction($link)) {
+                // Using prepared statements here so to protect against sql injections if the values were properly sanitized
 
-                $updateAllowedValueQuery = "UPDATE subitem_allowed_value SET value = '$allowedValue', subitem_id = '$subId' WHERE subitem_allowed_value.id = {$_REQUEST["id"]}";
-                $updateAllowedValueResult = mysqli_query($link, $updateAllowedValueQuery);
+                // Updating the correct value on the tables using prepared statements
+                $updateAllowedValueQuery = mysqli_prepare($link, "UPDATE subitem_allowed_value SET value = ?, subitem_id = ? WHERE subitem_allowed_value.id = ? ");
+                mysqli_stmt_bind_param($updateAllowedValueQuery, "sss", $allowedValue, $subId, $_REQUEST["id"]);
+
+                // Gets the result of the query execution
+                $updateAllowedValueResult = mysqli_stmt_execute($updateAllowedValueQuery);
+
                 // checking whether the query was successful or not
                 if (!$updateAllowedValueResult) {
+                    $error = mysqli_stmt_error($updateAllowedValueQuery);
+
                     mysqli_rollback($link);
 
                     echo "<div class='error-div'>
-                           <strong class='list' >Ocorreu um erro na Atualização de dados: " . mysqli_error($link) . "</strong>
+                           <strong class='list' >Ocorreu um erro na Atualização de dados: " . htmlspecialchars($error) . "</strong>
                           </div>";
 
                     voltar_atras();
@@ -500,7 +623,7 @@ else if (arrayKeysExists(["estado", "tipo", "id"], $_REQUEST) && checkKeysValues
             } else {
 
                 echo "<div class='error-div'>
-                        <strong class='list' >Ocorreu um erro na Atualização de dados: " . mysqli_error($link) . "</strong>
+                        <strong class='list' >Ocorreu um erro no começo da Atualização de dados: " . mysqli_error($link) . "</strong>
                       </div>";
 
                 voltar_atras();
@@ -519,19 +642,23 @@ else if (arrayKeysExists(["estado", "tipo", "id"], $_REQUEST) && checkKeysValues
             </tr>
           </thead>";
 
-        // Fetching the subitem_id, value, state for the allowed_value requested
-        $allowedValueQuery = "SELECT subitem_allowed_value.subitem_id AS subId,subitem_allowed_value.value , subitem_allowed_value.state FROM subitem_allowed_value WHERE subitem_allowed_value.id = {$_REQUEST["id"]}";
-        $allowedValueQueryResult = mysqli_query($link, $allowedValueQuery);
+        // Fetching the subitem_id, value, state for the allowed_value requested using prepared statements to prevent sql injections
+        $allowedValueQuery = mysqli_prepare($link, "SELECT subitem_allowed_value.subitem_id AS subId,subitem_allowed_value.value , subitem_allowed_value.state FROM subitem_allowed_value WHERE subitem_allowed_value.id = ? ");
+        mysqli_stmt_bind_param($allowedValueQuery, "s", $_REQUEST["id"]);
+
+        $allowedValueQueryResult = mysqli_stmt_execute($allowedValueQuery);
 
         // Checking if the query was successful
         if (!$allowedValueQueryResult) {
+            $error = mysqli_stmt_error($allowedValueQuery);
 
             echo "<div class='error-div'>
-                    <strong class='list' >Ocorreu um erro na consulta:" . mysqli_error($link) . "</strong>
+                    <strong class='list' >Ocorreu um erro na consulta:" . htmlspecialchars($error) . "</strong>
                   </div>";
 
             voltar_atras();
         } else {
+            $allowedValueQueryResult = mysqli_stmt_get_result($allowedValueQuery);
             $allowedValueData = mysqli_fetch_assoc($allowedValueQueryResult);
 
             // Fetching all subitem ids for a dropdown box so that we can choose the id more easily without needing mental mapping of the database
@@ -570,6 +697,7 @@ else if (arrayKeysExists(["estado", "tipo", "id"], $_REQUEST) && checkKeysValues
                 </tbody>
                 </table>
                 <input type='hidden' name='updateState' value='updating'>
+                <input type='hidden' name='allowedId' value='{$_REQUEST["id"]}'>
                 <p>Clique em <strong>Submeter</strong> para atualizar os dados</p>
                 <hr><button class='button-33' type='submit'>Submeter</button></form>";
 
@@ -590,6 +718,11 @@ else if (arrayKeysExists(["estado", "tipo", "id"], $_REQUEST) && checkKeysValues
             $validForm = false;
             $invalidFields .= "<p>Estado do valor permitido é invalido</p>";
         }
+        // Checks whether the item id received is valid or not
+        if (empty($_REQUEST["allowedId"]) || !is_numeric($_REQUEST["allowedId"]) || $_REQUEST["id"] != $_REQUEST["allowedId"]) {
+            $validForm = false;
+            $invalidFields .= "<p>O id do subitem é invalido</p>";
+        }
         // Checks if there were any errors in the server side verification
         if (!$validForm) {
             echo $invalidFields;
@@ -597,16 +730,23 @@ else if (arrayKeysExists(["estado", "tipo", "id"], $_REQUEST) && checkKeysValues
         } // if there were no problems update the database
         else {
             if (!$_SESSION["allowedValueUpdated"] && mysqli_begin_transaction($link)) {
+                // Using prepared statements here so to protect against sql injections if the values were properly sanitized
 
-                $updateAllowedValueQuery = "UPDATE subitem_allowed_value SET state='active' WHERE subitem_allowed_value.id = {$_REQUEST["id"]}";
-                $updateAllowedValueQueryResult = mysqli_query($link, $updateAllowedValueQuery);
+                // Updating the correct value on the tables using prepared statements
+                $updateAllowedValueQuery = mysqli_prepare($link, "UPDATE subitem_allowed_value SET state = 'active' WHERE subitem_allowed_value.id = ? ");
+                mysqli_stmt_bind_param($updateAllowedValueQuery, "s", $_REQUEST["id"]);
+
+                // Gets the result of the query execution
+                $updateAllowedValueQueryResult = mysqli_stmt_execute($updateAllowedValueQuery);
 
                 // checking whether the query was successful or not
                 if (!$updateAllowedValueQueryResult) {
+                    $error = mysqli_stmt_error($updateAllowedValueQuery);
+
                     mysqli_rollback($link);
 
                     echo "<div class='error-div'>
-                           <strong class='list' >Ocorreu um erro na Atualização de dados: " . mysqli_error($link) . "</strong>
+                           <strong class='list' >Ocorreu um erro na Atualização de dados: " . htmlspecialchars($error) . "</strong>
                           </div>";
 
                     voltar_atras();
@@ -629,7 +769,7 @@ else if (arrayKeysExists(["estado", "tipo", "id"], $_REQUEST) && checkKeysValues
             } else {
 
                 echo "<div class='error-div'>
-                        <strong class='list' >Ocorreu um erro na Atualização de dados: " . mysqli_error($link) . "</strong>
+                        <strong class='list' >Ocorreu um erro no começo da Atualização de dados: " . mysqli_error($link) . "</strong>
                       </div>";
 
                 voltar_atras();
@@ -647,19 +787,22 @@ else if (arrayKeysExists(["estado", "tipo", "id"], $_REQUEST) && checkKeysValues
             </tr>
           </thead>";
 
-        // Fetching all subitem ids for a dropdown box so that we can choose the id more easily without needing mental mapping of the database
-        $allowedValueQuery = "SELECT subitem_allowed_value.subitem_id AS subId,subitem_allowed_value.value , subitem_allowed_value.state FROM subitem_allowed_value WHERE subitem_allowed_value.id = {$_REQUEST["id"]}";
-        $allowedValueQueryResult = mysqli_query($link, $allowedValueQuery);
+        // Fetching the subitem_id, value, state for the allowed_value requested using prepared statements to prevent sql injections
+        $allowedValueQuery = mysqli_prepare($link, "SELECT subitem_allowed_value.subitem_id AS subId,subitem_allowed_value.value , subitem_allowed_value.state FROM subitem_allowed_value WHERE subitem_allowed_value.id = ? ");
+        mysqli_stmt_bind_param($allowedValueQuery, "s", $_REQUEST["id"]);
+
+        $allowedValueQueryResult = mysqli_stmt_execute($allowedValueQuery);
 
         if (!$allowedValueQueryResult) {
+            $error = mysqli_stmt_error($allowedValueQuery);
 
             echo "<div class='error-div'>
-                    <strong class='list' >Ocorreu um erro na consulta:" . mysqli_error($link) . "</strong>
+                    <strong class='list' >Ocorreu um erro na consulta:" . htmlspecialchars($error) . "</strong>
                   </div>";
 
             voltar_atras();
         } else {
-
+            $allowedValueQueryResult = mysqli_stmt_get_result($allowedValueQuery);
             $allowedValueData = mysqli_fetch_assoc($allowedValueQueryResult);
 
             echo "
@@ -675,6 +818,7 @@ else if (arrayKeysExists(["estado", "tipo", "id"], $_REQUEST) && checkKeysValues
             <form method='post' action='" . get_permalink() . basename($_SERVER["REQUEST_URI"]) . "'>
             <input type='hidden' name='state' value='active'>
             <input type='hidden' name='updateState' value='activating'>
+            <input type='hidden' name='allowedId' value='{$_REQUEST["id"]}'>
             <p>Clique em <strong>Submeter</strong> para atualizar os dados</p>
             <hr><button class='button-33' type='submit'>Submeter</button></form>";
 
@@ -697,6 +841,12 @@ else if (arrayKeysExists(["estado", "tipo", "id"], $_REQUEST) && checkKeysValues
             $invalidFields .= "<p>Estado do valor permitido é invalido</p>";
         }
 
+        // Checks whether the item id received is valid or not
+        if (empty($_REQUEST["allowedId"]) || !is_numeric($_REQUEST["allowedId"]) || $_REQUEST["id"] != $_REQUEST["allowedId"]) {
+            $validForm = false;
+            $invalidFields .= "<p>O id do subitem é invalido</p>";
+        }
+
         // Checks if there were any errors in the server side verification
         if (!$validForm) {
             echo $invalidFields;
@@ -704,17 +854,23 @@ else if (arrayKeysExists(["estado", "tipo", "id"], $_REQUEST) && checkKeysValues
         } // if there were no problems update the database
         else {
             if (!$_SESSION["allowedValueUpdated"] && mysqli_begin_transaction($link)) {
+                // Using prepared statements here so to protect against sql injections if the values were properly sanitized
 
-                // Updating the allowed value state
-                $updateAllowedValueQuery = "UPDATE subitem_allowed_value SET state='inactive' WHERE subitem_allowed_value.id = {$_REQUEST["id"]}";
-                $updateAllowedValueQueryResult = mysqli_query($link, $updateAllowedValueQuery);
+                // Updating the correct value on the tables using prepared statements
+                $updateAllowedValueQuery = mysqli_prepare($link, "UPDATE subitem_allowed_value SET state='inactive' WHERE subitem_allowed_value.id = ? ");
+                mysqli_stmt_bind_param($updateAllowedValueQuery, "s", $_REQUEST["id"]);
+
+                // Gets the result of the query execution
+                $updateAllowedValueQueryResult = mysqli_stmt_execute($updateAllowedValueQuery);
 
                 // checking whether the query was successful or not
                 if (!$updateAllowedValueQuery) {
+                    $error = mysqli_stmt_error($updateAllowedValueQuery);
+
                     mysqli_rollback($link);
 
                     echo "<div class='error-div'>
-                           <strong class='list' >Ocorreu um erro na Atualização de dados: " . mysqli_error($link) . "</strong>
+                           <strong class='list' >Ocorreu um erro na Atualização de dados: " . htmlspecialchars($error) . "</strong>
                           </div>";
 
                     voltar_atras();
@@ -737,7 +893,7 @@ else if (arrayKeysExists(["estado", "tipo", "id"], $_REQUEST) && checkKeysValues
             } else {
 
                 echo "<div class='error-div'>
-                        <strong class='list' >Ocorreu um erro na Atualização de dados: " . mysqli_error($link) . "</strong>
+                        <strong class='list' >Ocorreu um erro no começo da Atualização de dados: " . mysqli_error($link) . "</strong>
                       </div>";
 
                 voltar_atras();
@@ -756,19 +912,22 @@ else if (arrayKeysExists(["estado", "tipo", "id"], $_REQUEST) && checkKeysValues
             </tr>
           </thead>";
 
-        // Fetching all subitem ids for a dropdown box so that we can choose the id more easily without needing mental mapping of the database
-        $allowedValueQuery = "SELECT subitem_allowed_value.subitem_id AS subId,subitem_allowed_value.value , subitem_allowed_value.state FROM subitem_allowed_value WHERE subitem_allowed_value.id = {$_REQUEST["id"]}";
-        $allowedValueQueryResult = mysqli_query($link, $allowedValueQuery);
+        // Fetching the subitem_id, value, state for the allowed_value requested using prepared statements to prevent sql injections
+        $allowedValueQuery = mysqli_prepare($link, "SELECT subitem_allowed_value.subitem_id AS subId,subitem_allowed_value.value , subitem_allowed_value.state FROM subitem_allowed_value WHERE subitem_allowed_value.id = ? ");
+        mysqli_stmt_bind_param($allowedValueQuery, "s", $_REQUEST["id"]);
+
+        $allowedValueQueryResult = mysqli_stmt_execute($allowedValueQuery);
 
         if (!$allowedValueQueryResult) {
+            $error = mysqli_stmt_error($allowedValueQuery);
 
             echo "<div class='error-div'>
-                    <strong class='list' >Ocorreu um erro na consulta:" . mysqli_error($link) . "</strong>
+                    <strong class='list' >Ocorreu um erro na consulta:" . htmlspecialchars($allowedValueQuery) . "</strong>
                   </div>";
 
             voltar_atras();
         } else {
-
+            $allowedValueQueryResult = mysqli_stmt_get_result($allowedValueQuery);
             $allowedValueData = mysqli_fetch_assoc($allowedValueQueryResult);
 
             echo "
@@ -784,6 +943,7 @@ else if (arrayKeysExists(["estado", "tipo", "id"], $_REQUEST) && checkKeysValues
             <form method='post' action='" . get_permalink() . basename($_SERVER["REQUEST_URI"]) . "'>
             <input type='hidden' name='state' value='inactive'>
             <input type='hidden' name='updateState' value='deactivating'>
+            <input type='hidden' name='allowedId' value='{$_REQUEST["id"]}'>
             <p>Clique em <strong>Submeter</strong> para atualizar os dados</p>
             <hr><button class='button-33' type='submit'>Submeter</button>";
 
@@ -793,83 +953,111 @@ else if (arrayKeysExists(["estado", "tipo", "id"], $_REQUEST) && checkKeysValues
     }
 } else if (arrayKeysExists(["estado", "tipo", "id"], $_REQUEST) && checkKeysValues(["estado", "tipo"], $_REQUEST, ["apagar", "valor_permitido"])) {
     if (array_key_exists("updateState", $_REQUEST) && $_REQUEST["updateState"] == "deleting") {
-        if (!$_SESSION["allowedValueUpdated"] && mysqli_begin_transaction($link)) {
+        // Server-side verifications, can be tested with postman
+        $validForm = true;
+        $invalidFields = "";
 
-            $deleteAllowedValueQuery = "DELETE FROM subitem_allowed_value WHERE subitem_allowed_value.id = {$_REQUEST["id"]}";
-            $deleteAllowedValueQueryResult = mysqli_query($link, $deleteAllowedValueQuery);
+        // Checks whether the item id received is valid or not
+        if (empty($_REQUEST["allowedId"]) || !is_numeric($_REQUEST["allowedId"]) || $_REQUEST["id"] != $_REQUEST["allowedId"]) {
+            $validForm = false;
+            $invalidFields .= "<p>O id do subitem é invalido</p>";
+        }
 
-            // checking whether the query was successful or not
-            if (!$deleteAllowedValueQuery) {
-                mysqli_rollback($link);
+        // Checks if there were any errors in the server side verification
+        if (!$validForm) {
+            echo $invalidFields;
+            voltar_atras();
+        } // if there were no problems update the database
+        else {
+            if (!$_SESSION["allowedValueUpdated"] && mysqli_begin_transaction($link)) {
+                // Using prepared statements here so to protect against sql injections if the values were properly sanitized
 
-                echo "<div class='error-div'>
-                           <strong class='list' >Ocorreu um erro na Atualização de dados: " . mysqli_error($link) . "</strong>
+                // Updating the correct value on the tables using prepared statements
+                $deleteAllowedValueQuery = mysqli_prepare($link, "DELETE FROM subitem_allowed_value WHERE subitem_allowed_value.id = ? ");
+                mysqli_stmt_bind_param($deleteAllowedValueQuery, "s", $_REQUEST["id"]);
+
+                // Gets the result of the query execution
+                $deleteAllowedValueQueryResult = mysqli_stmt_execute($deleteAllowedValueQuery);
+
+                // checking whether the query was successful or not
+                if (!$deleteAllowedValueQuery) {
+                    $error = mysqli_stmt_error($deleteAllowedValueQuery);
+
+                    mysqli_rollback($link);
+
+                    echo "<div class='error-div'>
+                           <strong class='list' >Ocorreu um erro na Atualização de dados: " . htmlspecialchars($error) . "</strong>
                           </div>";
 
-                voltar_atras();
-            } else {
+                    voltar_atras();
+                } else {
 
-                echo "<p>Eliminições realizadas com sucesso</p>
+                    echo "<p>Eliminições realizadas com sucesso</p>
                           <p>Clique em continuar para voltar a pagina de gestao de itens</p>
                           <hr><a href='" . get_site_url() . "/gestao-de-valores-permitidos'><button class='button-33'>Continuar</button></a>";
 
-                // Commit the transaction
-                mysqli_commit($link);
-                $_SESSION["allowedValueUpdated"] = true;
-            }
-        }// Checking if the item was already updated
-        else if ($_SESSION["allowedValueUpdated"]) {
-            echo "<div class='error-div'>
-                    <b class='list'>Os dados ja foram atualizados</b>
-                  </div>
+                    // Commit the transaction
+                    mysqli_commit($link);
+                    $_SESSION["allowedValueUpdated"] = true;
+                }
+            }// Checking if the item was already updated
+            else if ($_SESSION["allowedValueUpdated"]) {
+                echo "<div class='error-div'>
+                        <b class='list'>Os dados ja foram atualizados</b>
+                      </div>
                     <a href='" . get_site_url() . "/gestao-de-valores-permitidos'><button class='button-33'>Continuar</button></a>";
-        } else {
+            } else {
 
-            echo "<div class='error-div'>
-                        <strong class='list' >Ocorreu um erro na Atualização de dados: " . mysqli_error($link) . "</strong>
-                  </div>";
+                echo "<div class='error-div'>
+                        <strong class='list' >Ocorreu um erro no começo da Atualização de dados: " . mysqli_error($link) . "</strong>
+                      </div>";
 
-            voltar_atras();
+                voltar_atras();
+            }
         }
     } else {
-        echo " < strong>Estamos prestes a apagar os dados abaixo da base de dados . Confirma que pertende apagar os mesmos ?</strong >
+        echo " <strong>Estamos prestes a apagar os dados abaixo da base de dados . Confirma que pertende apagar os mesmos ?</strong>
           <table class='content-table' >
-          <thead >
-            <tr >
-                <th > id</th >
-                <th > subitem_id</th >
-                <th > value</th >
-                <th > state</th >
-            </tr >
-          </thead > ";
+          <thead>
+            <tr>
+                <th>id</th>
+                <th>subitem_id</th>
+                <th>value</th>
+                <th>state</th>
+            </tr>
+          </thead> ";
 
-        // Fetching all subitem ids for a dropdown box so that we can choose the id more easily without needing mental mapping of the database
-        $allowedValueQuery = "SELECT subitem_allowed_value . subitem_id as subId,subitem_allowed_value . value , subitem_allowed_value . state FROM subitem_allowed_value WHERE subitem_allowed_value.id = {$_REQUEST["id"]}";
-        $allowedValueQueryResult = mysqli_query($link, $allowedValueQuery);
+        // Fetching the subitem_id, value, state for the allowed_value requested using prepared statements to prevent sql injections
+        $allowedValueQuery = mysqli_prepare($link, "SELECT subitem_allowed_value . subitem_id as subId,subitem_allowed_value . value , subitem_allowed_value . state FROM subitem_allowed_value WHERE subitem_allowed_value.id = ? ");
+        mysqli_stmt_bind_param($allowedValueQuery, "s", $_REQUEST["id"]);
+
+        $allowedValueQueryResult = mysqli_stmt_execute($allowedValueQuery);
 
         if (!$allowedValueQueryResult) {
+            $error = mysqli_stmt_error($allowedValueQuery);
 
             echo "<div class='error-div'>
-                    <strong class='list' >Ocorreu um erro na consulta:" . mysqli_error($link) . "</strong>
+                    <strong class='list' >Ocorreu um erro na consulta:" . htmlspecialchars($error) . "</strong>
                   </div>";
 
             voltar_atras();
         } else {
-
+            $allowedValueQueryResult = mysqli_stmt_get_result($allowedValueQuery);
             $allowedValueData = mysqli_fetch_assoc($allowedValueQueryResult);
 
             echo "
-            < tbody>
-                <tr >
+            <tbody>
+                <tr>
                     <td ><strong >{$_REQUEST["id"]}</strong ></td >
                     <td ><strong >{$allowedValueData["subId"]}</strong ></td >
                     <td ><strong >{$allowedValueData["value"]}</strong ></td >
                     <td ><strong >{$allowedValueData["state"]}</strong ></td >
-                </tr >
+                </tr>
             </tbody >
             </table >
             <form method = 'post' action = '" . get_permalink() . basename($_SERVER["REQUEST_URI"]) . "' >
             <input type = 'hidden' name = 'updateState' value = 'deleting' >
+            <input type='hidden' name='allowedId' value='{$_REQUEST["id"]}'>
             <p > Clique em < strong>Submeter </strong > para apagar os dados </p >
             <hr ><button class='button-33' type = 'submit' > Submeter</button ></form > ";
 
@@ -896,6 +1084,7 @@ function checkKeysValues(array $keys, array $arrayToCheck, array $values): bool
 {
     $containsValues = true;
     // checking if the keys array size is the same ad the values array
+
     if (count($keys) != count($values)) {
         return false;
     }

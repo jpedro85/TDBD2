@@ -23,7 +23,7 @@ if (!doesUserHavePermission("manage_allowed_values")) {
               <button type='submit'>Inserir valor permitido</button></form>
               <a href='$current_page'><button>Voltar Atrás</button></a>";
 
-        $_SESSION["valueAdded"] = false;
+        $_SESSION["allowedValueAdded"] = false;
         $_SESSION["subitemId"] = $_REQUEST["subitem"];
 
     } else if (array_key_exists("estado", $_REQUEST) && $_REQUEST["estado"] == "inserir") {
@@ -34,9 +34,10 @@ if (!doesUserHavePermission("manage_allowed_values")) {
         $invalidField = "";
 
         $newAllowedValued = (isset($_REQUEST["value"])) ? trim($_REQUEST["value"]) : "";
+        $newAllowedValued = htmlspecialchars($newAllowedValued);
 
         // Check allowed value received is empty or just numbers
-        if (empty($newAllowedValued) || is_numeric($newAllowedValued)) {
+        if (empty($newAllowedValued) || is_numeric($newAllowedValued) || containsOnlySpecialChars($newAllowedValued)) {
             $validForm = false;
             $invalidField .= "<li class='list'>Nome do valor permitido é inválido</li>";
         }
@@ -48,18 +49,26 @@ if (!doesUserHavePermission("manage_allowed_values")) {
             voltar_atras();
         } else {
 
-            $insertNewAllowedValueQuery = "INSERT INTO subitem_allowed_value(subitem_id, value, state) VALUES ('{$_SESSION["subitemId"]}', '$newAllowedValued', 'active' )";
+            // Insert new allowed value in the correct table using prepared statements
+            $insertNewAllowedValueQuery = mysqli_prepare($link, "INSERT INTO subitem_allowed_value(subitem_id, value, state) VALUES ( ?, ?, 'active' )");
+            mysqli_stmt_bind_param($insertNewAllowedValueQuery, "ss", $_SESSION["subitemId"], $newAllowedValued);
+            // $insertNewAllowedValueQuery = "INSERT INTO subitem_allowed_value(subitem_id, value, state) VALUES ('{$_SESSION["subitemId"]}', '$newAllowedValued', 'active' )";
+
 
             // Checks whether new allowed value was already added to the database if not start transaction
-            if (!$_SESSION["valueAdded"] && mysqli_begin_transaction($link)) {
-                // Checks whether the insert query was successful or not if not rollbacks the transaction and shows error
-                $insertNewAllowedValueResult = mysqli_query($link, $insertNewAllowedValueQuery);
+            if (!$_SESSION["allowedValueAdded"] && mysqli_begin_transaction($link)) {
+                // Checks whether the insert query was successful or not if not rollbacks the transaction and shows error that happened in the transaction
+                $insertNewAllowedValueResult = mysqli_stmt_execute($insertNewAllowedValueQuery);
+                // $insertNewAllowedValueResult = mysqli_query($link, $insertNewAllowedValueQuery);
                 if (!$insertNewAllowedValueResult) {
+
+                    // Gets the error that happened in the prepared statement and outputs the value in htmlspecialchars
+                    $error = mysqli_stmt_error($insertNewAllowedValueQuery);
 
                     mysqli_rollback($link);
 
                     echo "<div class='error-div'>
-                                <strong class='list' >Ocorreu um erro na Inserção de dados: " . mysqli_error($link) . "</strong>
+                                <strong class='list' >Ocorreu um erro na Inserção de dados: " . htmlspecialchars($error) . "</strong>
                               </div>";
 
                     voltar_atras();
@@ -101,11 +110,11 @@ if (!doesUserHavePermission("manage_allowed_values")) {
                       </div>
                       <a href='$current_page'><button>Continuar</button></a>";
 
-            } // If it didn't pass all the other checks it means an error occurred
+            } // If it didn't pass all the other checks it means an error occurred on the transaction start
             else {
 
                 echo "<div class='error-div'>
-                            <strong class='list' >Ocorreu um erro na Inserção de dados: " . mysqli_error($link) . "</strong>
+                            <strong class='list' >Ocorreu um erro no inicio da Inserção de dados: " . mysqli_error($link) . "</strong>
                           </div>";
 
                 voltar_atras();

@@ -13,15 +13,18 @@ if (!doesUserHavePermission("manage_items")) {
         $validForm = true;
         $invalidFields = "";
 
-        // Trim the received values, so it has no spaces in the edges
+        // Trim the received values, so it has no spaces in the edges and is not a html special char
         $itemName = (isset($_REQUEST["itemName"])) ? trim($_REQUEST["itemName"]) : "";
+        $itemName = htmlspecialchars($itemName);
+
         $typeName = (isset($_REQUEST["typeName"])) ? trim($_REQUEST["typeName"]) : "";
+        $typeName = htmlspecialchars($typeName);
 
         // Data from database to check item type
         $itemStates = get_enum_values($link, "item", "state");
 
         // Check itemName received is empty or just numbers
-        if (empty($itemName) || is_numeric($itemName)) {
+        if (empty($itemName) || is_numeric($itemName) || containsOnlySpecialChars($itemName)) {
             $validForm = false;
             $invalidFields .= "<li class='list'>Nome do item é invalido</li>";
         }
@@ -40,34 +43,46 @@ if (!doesUserHavePermission("manage_items")) {
             echo "<div class='error-div'>$invalidFields</div>";
             voltar_atras();
         } else {
+            // Using prepared statements here so to protect against sql injections if values were properly sanitized
 
             // Fetch the item type id with same name as
-            $itemTypeIdQuery = "SELECT id FROM item_type WHERE name = '{$typeName}'";
-            $itemTypeIdResult = mysqli_query($link, $itemTypeIdQuery);
+            $itemTypeIdQuery = mysqli_prepare($link, "SELECT id FROM item_type WHERE name = ?");
+            mysqli_stmt_bind_param($itemTypeIdQuery, "s", $typeName);
 
             // Checks if the query was successful
-            if (!$itemTypeIdResult) {
+            if (!mysqli_stmt_execute($itemTypeIdQuery)) {
+
+                // Gets the error that happened in the prepared statement and outputs the value in htmlspecialchars
+                $error = mysqli_stmt_error($itemTypeIdQuery);
 
                 echo "<div class='error-div'>
-                        <strong class='list' >Ocorreu um erro na Inserção de dados: " . mysqli_error($link) . "</strong>
+                        <strong class='list' >Ocorreu um erro na Inserção de dados: " . htmlspecialchars($error) . "</strong>
                       </div>";
 
             } else {
+                // Gets the result of the query if the statement was executed correctly
+                $itemTypeIdResult = mysqli_stmt_get_result($itemTypeIdQuery);
+                // Fetches the typeId from the resulting query
                 $itemTypeId = mysqli_fetch_assoc($itemTypeIdResult)["id"];
+
                 // Start transaction to insert items
                 if (!$_SESSION["itemAdded"] && mysqli_begin_transaction($link)) {
 
-                    // Insert new item in the correct table
-                    $insertNewItemQuery = "INSERT INTO item ( name, item_type_id, state) VALUES ( '" . $itemName . "', '" . $itemTypeId . "', '" . $_REQUEST["state"] . "')";
-                    $insertNewItemResult = mysqli_query($link, $insertNewItemQuery);
+                    // Insert new item in the correct table using prepared statements
+                    $insertNewItemQuery = mysqli_prepare($link, "INSERT INTO item ( name, item_type_id, state) VALUES ( ?,?,? )");
+                    // Replaces the ? in the query for the appropriate values
+                    mysqli_stmt_bind_param($insertNewItemQuery, "sss", $itemName, $itemTypeId, $_REQUEST["state"]);
 
                     // Checks if the query was successful
-                    if (!$insertNewItemResult) {
+                    if (!mysqli_stmt_execute($insertNewItemQuery)) {
+
+                        // Gets the error that happened in the prepared statement and outputs the value in htmlspecialchars
+                        $error = mysqli_stmt_error($insertNewItemQuery);
 
                         mysqli_rollback($link);
 
                         echo "<div class='error-div'>
-                                <strong class='list' >Ocorreu um erro na Inserção de dados: " . mysqli_error($link) . "</strong>
+                                <strong class='list' >Ocorreu um erro na Inserção de dados: " . htmlspecialchars($error) . "</strong>
                               </div>";
 
                         voltar_atras();
@@ -110,11 +125,11 @@ if (!doesUserHavePermission("manage_items")) {
                           </div>
                           <a href='$current_page'><button class='button'>Continuar</button></a>";
 
-                } // If it didn't pass all the other checks it means an error occurred
+                } // If it didn't pass all the other checks it means an error occurred on the transaction start
                 else {
 
                     echo "<div class='error-div'>
-                            <strong class='list' >Ocorreu um erro na Inserção de dados: " . mysqli_error($link) . "</strong>
+                            <strong class='list' >Ocorreu um erro no inicio da Inserção de dados: " . mysqli_error($link) . "</strong>
                           </div>";
 
                     voltar_atras();
@@ -176,7 +191,7 @@ if (!doesUserHavePermission("manage_items")) {
                         $itemTypeRows .= "<td>{$item["state"]}</td>";
 
                         // Checking whether the current item state is active or inactive to have the correct action of changing state
-                        $item["state"] == "active" ? $itemAction = "<a class='links' href='$editDataPage?estado=desativar&tipo=item&id={$item["id"]}'>[desativar]</a>" : $itemAction = "<a class='links href='$editDataPage?estado=ativar&tipo=item&id={$item["id"]}'>[ativar]</a>";
+                        $item["state"] == "active" ? $itemAction = "<a class='links' href='$editDataPage?estado=desativar&tipo=item&id={$item["id"]}'>[desativar]</a>" : $itemAction = "<a class='links' href='$editDataPage?estado=ativar&tipo=item&id={$item["id"]}'>[ativar]</a>";
 
                         // Formatting last column to have the all actions corresponding to the item data
                         $itemTypeRows .= "<td>
