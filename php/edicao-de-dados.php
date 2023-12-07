@@ -35,7 +35,7 @@ if (arrayKeysExists(["estado", "tipo", "id"], $_REQUEST) && checkKeysValues(["es
         // Checks if there were any errors in the server side verification
         if (!$validForm) {
             echo "<div class='error-div'>$invalidFields</div><hr>";
-            voltar_atras();;
+            voltar_atras();
         }// if there were no problems update the database
         else {
             if (!$_SESSION["itemUpdated"] && mysqli_begin_transaction($link)) {
@@ -194,7 +194,7 @@ if (arrayKeysExists(["estado", "tipo", "id"], $_REQUEST) && checkKeysValues(["es
         // Checks if there were any errors in the server side verification
         if (!$validForm) {
             echo "<div class='error-div'>$invalidFields</div><hr>";
-            voltar_atras();;
+            voltar_atras();
         } // if there were no problems update the database
         else {
             if (!$_SESSION["itemUpdated"] && mysqli_begin_transaction($link)) {
@@ -327,7 +327,7 @@ else if (arrayKeysExists(["estado", "tipo", "id"], $_REQUEST) && checkKeysValues
         // Checks if there were any errors in the server side verification
         if (!$validForm) {
             echo "<div class='error-div'>$invalidFields</div><hr>";
-            voltar_atras();;
+            voltar_atras();
         } // if there were no problems update the database
         else {
             if (!$_SESSION["itemUpdated"] && mysqli_begin_transaction($link)) {
@@ -461,7 +461,8 @@ else if (arrayKeysExists(["estado", "tipo", "id"], $_REQUEST) && checkKeysValues
             if (!$_SESSION["itemUpdated"] && mysqli_begin_transaction($link)) {
                 // Using prepared statements here so to protect against sql injections if the values were properly sanitized
 
-                // Updating the correct value on the tables using prepared statements
+
+	            // Deleting the correct value on the tables using prepared statements
                 $deleteItemQuery = mysqli_prepare($link, "DELETE FROM item WHERE item.id = ? ");
                 mysqli_stmt_bind_param($deleteItemQuery, "s", $_REQUEST["id"]);
 
@@ -1125,7 +1126,7 @@ function checkKeysValues(array $keys, array $arrayToCheck, array $values): bool
     if (count($keys) != count($values)) {
         return false;
     }
-    // We are iterating the whole array and getting its index on $index and saving the value thats in that index on $key
+    // We are iterating the whole array and getting its index on $index and saving the value that's in that index on $key
     foreach ($keys as $index => $key) {
         if (!array_key_exists($key, $arrayToCheck)) {
             return false;
@@ -1137,4 +1138,3 @@ function checkKeysValues(array $keys, array $arrayToCheck, array $values): bool
     return $containsValues;
 }
 
-?>
