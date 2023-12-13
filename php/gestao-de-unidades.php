@@ -4,8 +4,11 @@ require_once("custom/php/common.php");
 if(!is_user_logged_in() & current_user_can('manage_unit_types')){
     echo 'O Utilizador não tem permissões para aceder à página';
 }else{
-    $estado = isset($_REQUEST["estado"]) ? $_REQUEST["estado"] : '';
-    $pattern = '/^[a-zA-Z0-9\s]+$/';
+    $estado = '';
+    if (isset($_REQUEST["estado"])) {
+        $estado = $_REQUEST["estado"];
+    }
+    $pattern = '/^[a-zA-Z0-9\s^\/]+$/';
     $camposF="";
     $erro = false;
     if ($estado == "inserir") {//caso o hidden estado esteja a inserir vai aparecer esta parte do código
@@ -35,7 +38,7 @@ if(!is_user_logged_in() & current_user_can('manage_unit_types')){
             // voltaatras();
         } else {
             echo '<li><b class="success">Inseriu os dados de novo tipo de unidade com sucesso.</b><br>Clique em Continuar para AVANÇAR!</li>
-        <a href=' . $current_page . ' ><button>Continuar</button></a>';
+        <a href=' . $current_page . ' ><button class="button1">Continuar</button></a>';
         }
         }
     }else{
