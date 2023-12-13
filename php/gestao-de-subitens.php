@@ -6,19 +6,37 @@ if(!is_user_logged_in() && current_user_can('manage_subitems')){
     echo 'O Utilizador não tem permissões para aceder à página';
 }else {
     echo 2;
+    $estado='';
     $listUNIT= '';
     $lista = '';
-    $estado = isset($_REQUEST["estado"]) ? $_REQUEST["estado"] : '';
-    $pattern = '/^[a-zA-Z0-9\s]+$/';
+    if (isset($_REQUEST["estado"])) {
+        $estado = $_REQUEST["estado"];
+    }
+    $pattern = '/^[a-zA-Z0-9\s^\/]+$/';
     $camposF = '<h3><b>Gestão de subitens - inserção</b></h3><br>';
     $erro = false;
     if ($estado == "inserir") {//caso o hidden estado esteja a inserir vai aparecer esta parte do código
         //Verifica se as variáveis estão atribuidas ao array $_REQUEST, caso contrário é atribuido o valor de ''
-        $ITname = isset($_REQUEST["ITname"]) ? $_REQUEST["ITname"] : '';
-        $Eitem = isset($_REQUEST["Eitem"]) ? $_REQUEST["Eitem"] : '';
-        $slctunit = isset($_REQUEST["slctunit"]) ? $_REQUEST["slctunit"] : '';
-        $formCamp = isset($_REQUEST["formCamp"]) ? $_REQUEST["formCamp"] : '';
-        $mandatory = isset($_REQUEST["mandatory"]) ? $_REQUEST["mandatory"] : '';
+        $ITname = '';
+        if (isset($_REQUEST["ITname"])) {
+            $ITname = $_REQUEST["ITname"];
+        }
+        $Eitem = '';
+        if (isset($_REQUEST["Eitem"])) {
+            $Eitem = $_REQUEST["Eitem"];
+        }
+        $slctunit = '';
+        if (isset($_REQUEST["slctunit"])) {
+            $slctunit = $_REQUEST["slctunit"];
+        }
+        $formCamp = '';
+        if (isset($_REQUEST["formCamp"])) {
+            $formCamp = $_REQUEST["formCamp"];
+        }
+        $mandatory = '';
+        if (isset($_REQUEST["mandatory"])) {
+            $mandatory = $_REQUEST["mandatory"];
+        }
         // Verificação do subitem name
         if (empty($ITname) || is_numeric($ITname) || !preg_match($pattern, $ITname)) {
             $camposF .= '<li class="list">Falta inserir o nome do subitem, ou este é numérico</li><br>';
@@ -83,7 +101,7 @@ if(!is_user_logged_in() && current_user_can('manage_subitems')){
                 //Vai me dar o novo ID inserido na Base de Dados
                 // Exibindo mensagem de sucesso e botão para continuar
                 echo '<li><b class="success">Os dados foram inseridos com sucesso</b><br>Clique em Continuar para AVANÇAR!</li>
-        <a href=' . $current_page . ' ><button>Continuar</button></a>';
+        <a href=' . $current_page . ' ><button class="button1">Continuar</button></a>';
                 $NewID = mysqli_insert_id($link);
                 $NewFormFName = $tresLetras . "-" . $NewID . "-" . $_REQUEST["ITname"];
                 $updateQuery = "UPDATE subitem SET form_field_name = '" . $NewFormFName . "' WHERE id = " . $NewID;
