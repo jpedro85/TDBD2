@@ -5,7 +5,6 @@ require_once("custom/php/common.php");
 if(!is_user_logged_in() && current_user_can('manage_subitems')){
     echo 'O Utilizador não tem permissões para aceder à página';
 }else {
-    echo 2;
     $estado='';
     $listUNIT= '';
     $lista = '';
@@ -155,9 +154,9 @@ if(!is_user_logged_in() && current_user_can('manage_subitems')){
                  <td>' . $lineSubItem["SubFFO"] . '</td>
                  <td>' . $lineSubItem["mandatory"] . '</td>
                  <td>' . $lineSubItem["state"] . '</td>
-                 <td><a  class="links" href="http://localhost/sgbd/edicao-de-dados/">[editar]</a><br>
-                     <a  class="links"  href="http://localhost/sgbd/edicao-de-dados/">[desativar]</a><br>
-                     <a  class="links" href="http://localhost/sgbd/edicao-de-dados/">[apagar]</a>
+                 <td><a  class="links" href="'.$editDataPage.'?estado=editar&tipo=subitem&id=' . $lineSubItem["SubID"] . '">[editar]</a><br>
+                     <a  class="links"  href="'.$editDataPage.'?estado=desativar&tipo=subitem&id=' . $lineSubItem["SubID"] . '">[desativar]</a><br>
+                     <a  class="links" href="'.$editDataPage.'?estado=apagar&tipo=subitem&id=' . $lineSubItem["SubID"] . '">[apagar]</a>
                  </td>
                  </tr>';
                 }

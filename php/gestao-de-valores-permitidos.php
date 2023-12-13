@@ -40,7 +40,7 @@ if (!doesUserHavePermission("manage_allowed_values")) {
         $newAllowedValued = htmlspecialchars($newAllowedValued);
 
         // Check allowed value received is empty or just numbers
-        if (empty($newAllowedValued) || is_numeric($newAllowedValued) || containsOnlySpecialChars($newAllowedValued)) {
+        if (empty($newAllowedValued) || is_numeric($newAllowedValued) || containsOnlyLatinLetters($newAllowedValued)) {
             $validForm = false;
             $invalidField .= "<li class='list'>Nome do valor permitido é inválido</li>";
         }

@@ -85,10 +85,8 @@ function goBackToOriginalPage(string $originalPageName){
     return "<a href='" . get_site_url() . "/$originalPageName'><button type='button' class='button-33'>Voltar Atrás</button></a>";
 }
 
-function containsOnlySpecialChars($str) {
-    // Use a regular expression to check if the string contains only special characters
-    // Checks if there is more than um char that's either lowercase or uppercase
-    return preg_match('/^[^a-zA-Z]+$/', $str) === 1;
+function containsOnlyLatinLetters($str): bool {
+    // Use a regular expression to check if the string contains only Latin characters
+	// Checks if the entire string consists of at least one Latin letter (with or without accents)
+	return preg_match('/^[\p{L}]+$/u', $str) === 1;
 }
-
-?>

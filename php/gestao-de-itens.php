@@ -24,7 +24,7 @@ if (!doesUserHavePermission("manage_items")) {
         $itemStates = get_enum_values($link, "item", "state");
 
         // Check itemName received is empty or just numbers
-        if (empty($itemName) || is_numeric($itemName) || containsOnlySpecialChars($itemName)) {
+        if (empty($itemName) || is_numeric($itemName) || !containsOnlyLatinLetters($itemName)) {
             $validForm = false;
             $invalidFields .= "<li class='list'>Nome do item é invalido</li>";
         }
