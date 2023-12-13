@@ -4,42 +4,39 @@
     font-size: 0.9em;
     min-width: 400px;
     border-radius: 50%;
-}
-
-.content-table thead tr {
+  }
+  
+  .content-table thead tr {
     background-color: rgb(16, 57, 140);
     color: #ffffff;
     text-align: center;
     font-weight: bold;
     border-radius: 50%;
-}
-
-.content-table th .content-table td {
+  }
+  
+  .content-table th .content-table td {
     padding: 12px 15px;
-}
-
-.erro {
+  }
+  .erro {
     color: crimson;
-}
-
-.success {
-    font-weight: bolder;
-    color: #004efa;
-}
-
-.content-table tbody tr {
+  }
+  .success {
+    color: chartreuse;
+  }
+  
+  .content-table tbody tr {
     border-bottom: 1px solid #dddddd;
-}
-
-.content-table tbody tr:nth-last-of-type(even) {
+  }
+  
+  .content-table tbody tr:nth-last-of-type(even) {
     background-color: #f3f3f3;
-}
-
-.content-table tbody tr:last-of-type {
+  }
+  
+  .content-table tbody tr:last-of-type {
     border-bottom: 2px solid rgb(16, 57, 140);
-}
-
-.button-33 {
+  }
+  
+  .button-33 {
     background-color: rgb(16, 57, 140);
     border-radius: 60px;
     box-shadow: rgba(34, 112, 145, 0.3) 0 -25px 18px -14px inset,
@@ -59,62 +56,60 @@
     user-select: none;
     -webkit-user-select: none;
     touch-action: manipulation;
-}
-
-.button-33:hover {
+  }
+  
+  .button-33:hover {
     background-color: rgb(16, 57, 140);
-    box-shadow: rgba(34, 112, 145, 0.3) 0 -25px 18px -14px inset,
+    box-shadow:  rgba(34, 112, 145, 0.3) 0 -25px 18px -14px inset,
     rgba(34, 112, 145, 0.3) 0 1px 2px, rgba(34, 112, 145, 0.3) 0 2px 4px,
     rgba(34, 112, 145, 0.3) 0 4px 8px, rgba(34, 112, 145, 0.3) 0 8px 16px,
     rgba(34, 112, 145, 0.3) 0 16px 32px;
     transform: scale(1.05) rotate(-1deg);
-}
-
-.contorno {
+  }
+  
+  .contorno {
     border-radius: 25px;
     background-color: #b2bed3;
     border: 10px solid #b2bed3;
-    margin: 1em 0;
-}
-
-.error-div {
+  }
+  
+  .error-div {
     border-radius: 25px;
-    background-color: #d3b2b2;
-    border: 3px solid #bb3d3d;
+    background-color: #bb3d3d;
+    border: 10px solid #d3b2b2;
     margin: 2em 0;
-}
-
-.list {
+  }
+  
+  .list {
     margin: 0 2em;
     color: crimson;
     font-weight: bold;
-}
-
-select {
+  }
+  select {
     width: 100%;
     padding: 5px 20px;
     border: none;
     border-radius: 4px;
     background-color: rgb(133, 167, 235);
-}
-
-input[type="text"] {
+  }
+  
+  input[type="text"] {
     border-radius: 1em;
     border: 2px solid rgb(16, 57, 140);
     width: 100%;
     padding: 5px 20px;
     box-sizing: border-box;
-}
-
-label > input[type="radio"] {
+  }
+  
+  label >input[type="radio"] {
     position: absolute;
     opacity: 0;
     cursor: pointer;
     top: 0;
-}
-
-/* Create a custom radio button */
-.checkmark {
+  }
+  
+  /* Create a custom radio button */
+  .checkmark {
     position: absolute;
     top: 0;
     left: 0;
@@ -125,66 +120,62 @@ label > input[type="radio"] {
     border: 1px solid #ccc;
     /*border-radius: 50%;*/
     border-radius: 4px;
-}
-
-.checkBox {
+  }
+  
+  .checkBox {
     display: block;
     margin-bottom: 10px;
     position: relative;
     padding-left: 30px; /* Space for the check mark */
     cursor: pointer;
-}
-
-/* On mouse-over, add a grey background color */
-.checkmark:hover {
+  }
+  
+  /* On mouse-over, add a grey background color */
+  .checkmark:hover {
     background-color: rgb(133, 167, 235);
-}
-
-/* When the radio button is checked, add a blue background */
-.container input:checked ~ .checkmark {
+  }
+  
+  /* When the radio button is checked, add a blue background */
+  .container input:checked ~ .checkmark {
     background-color: rgb(16, 57, 140);
-}
-
-/* Create the indicator (the dot/circle - hidden when not checked) */
-.checkmark:after {
+  }
+  
+  /* Create the indicator (the dot/circle - hidden when not checked) */
+  .checkmark:after {
     content: "";
     position: absolute;
     display: none;
-}
-
-/* Show the indicator (dot/circle) when checked */
-.container input:checked ~ .checkmark:after {
+  }
+  
+  /* Show the indicator (dot/circle) when checked */
+  .container input:checked ~ .checkmark:after {
     display: block;
     text-align: center;
-}
+  }
 
-/* Style the indicator (dot/circle) */
-.container .checkmark:after {
+  /* Style the indicator (dot/circle) */
+  .container .checkmark:after {
     width: 8px;
     height: 8px;
     border-radius: 50%;
     background: white;
     vertical-align: center;
-}
-
-.container .checkmark {
+  }
+  .container .checkmark{
     display: flex;
     justify-content: center;
     align-items: center;
-}
-
-body {
+  }
+  body{
     background-image: linear-gradient(rgb(34, 34, 121), rgb(57, 57, 170), rgb(88, 88, 252))
-}
-
-.box {
+  }
+  .box {
     position: relative;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-}
-
-.box select {
+  } 
+  .box select {
     background-color: #0563af;
     color: white;
     padding: 12px;
@@ -195,12 +186,11 @@ body {
     -webkit-appearance: button;
     appearance: button;
     outline: none;
-}
-
-.box::before {
+  } 
+  .box::before {
     content: "\f13a";
     font-family: FontAwesome;
-    position: relative;
+    position: absolute;
     top: 0;
     right: 0;
     width: 20%;
@@ -211,22 +201,19 @@ body {
     color: rgba(255, 255, 255, 0.5);
     background-color: rgba(255, 255, 255, 0.1);
     pointer-events: none;
-}
-
-.box:hover::before {
+  }
+  .box:hover::before {
     color: rgba(255, 255, 255, 0.6);
     background-color: rgba(255, 255, 255, 0.2);
-}
-
-.box select option {
+  }
+  .box select option {
     padding: 30px;
-}
-
-.links {
+  }
+  .links {
     background-image: linear-gradient(
-            to right,
-            #54b3d6,
-            #54b3d6 50%,
+      to right,
+      #54b3d6,
+      #54b3d6 50%,
     );
     background-size: 200% 100%;
     background-position: -100%;
@@ -234,9 +221,8 @@ body {
     padding: 5px 0;
     position: relative;
     transition: all 0.3s ease-in-out;
-}
-
-.links:before {
+  }
+  .links:before{
     content: '';
     background: #54b3d6;
     display: block;
@@ -246,17 +232,53 @@ body {
     width: 0;
     height: 3px;
     transition: all 0.3s ease-in-out;
-}
-
-.links:hover {
-    background-position: 0;
-}
-
-.links:hover::before {
+  }  
+  .links:hover {
+   background-position: 0;
+  } 
+  .links:hover::before{
     width: 100%;
+  }
+.button1 {
+  display: inline-block;
+  padding: .75rem 1.25rem;
+  border-radius: 10rem;
+  color: #fff;
+  text-transform: uppercase;
+  font-size: 1rem;
+  letter-spacing: .15rem;
+  transition: all .3s;
+  position: relative;
+  overflow: hidden;
+  z-index: 1;
+.button1:after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color:#0563af; ;
+    border-radius: 10rem;
+    z-index: -2;
+  }
+  .button1:before {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 0%;
+    height: 100%;
+    background-color: darken(#0563af, 15%);
+    transition: all .3s;
+    border-radius: 10rem;
+    z-index: -1;
+  }
+.button1:hover {
+    color: #fff;
+    .button1:before {
+      width: 100%;
+    }
+  }
 }
-
-.button-container {
-    display: flex;
-    gap: 3em;
-}
+  
