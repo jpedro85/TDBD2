@@ -17,7 +17,7 @@ if (arrayKeysExists(["estado", "tipo", "id"], $_REQUEST) && checkKeysValues(["es
         $typeId = htmlspecialchars($typeId);
 
         // Check itemName received is empty or just numbers
-        if (empty($itemName) || is_numeric($itemName) || containsOnlySpecialChars($itemName)) {
+        if (empty($itemName) || is_numeric($itemName) || containsOnlyLatinLetters($itemName)) {
             $validForm = false;
             $invalidFields .= "<li class='list'>Nome do item é invalido</li>";
         }
@@ -582,7 +582,7 @@ else if (arrayKeysExists(["estado", "tipo", "id"], $_REQUEST) && checkKeysValues
         $subId = htmlspecialchars($subId);
 
         // Check itemName received is empty or just numbers
-        if (empty($allowedValue) || is_numeric($allowedValue) || containsOnlySpecialChars($allowedValue)) {
+        if (empty($allowedValue) || is_numeric($allowedValue) || containsOnlyLatinLetters($allowedValue)) {
             $validForm = false;
             $invalidFields .= "<li class='list'>Nome do valor permitido é inválid</li>";
         }
@@ -1121,7 +1121,7 @@ else if (arrayKeysExists(["estado", "tipo", "id"], $_REQUEST) && checkKeysValues
 		$formOrder = htmlspecialchars( $formOrder );
 
 		// Check itemName received is empty or just numbers
-		if (empty($subitemName) || is_numeric($subitemName) || containsOnlySpecialChars($subitemName)) {
+		if (empty($subitemName) || is_numeric($subitemName) || containsOnlyLatinLetters($subitemName)) {
 			$validForm     = false;
 			$invalidFields .= "<li class='list'>O nome do subitem é invalido</li>";
 		}
