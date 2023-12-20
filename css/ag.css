@@ -21,7 +21,8 @@
     color: crimson;
   }
   .success {
-    color: chartreuse;
+    color: #053683;
+    font-weight: bolder;
   }
   
   .content-table tbody tr {
@@ -82,9 +83,10 @@
   
   .list {
     margin: 0 2em;
-    color: crimson;
+    color: #720118;
     font-weight: bold;
   }
+
   select {
     width: 100%;
     padding: 5px 20px;

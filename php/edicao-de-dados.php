@@ -17,7 +17,7 @@ if (arrayKeysExists(["estado", "tipo", "id"], $_REQUEST) && checkKeysValues(["es
         $typeId = htmlspecialchars($typeId);
 
         // Check itemName received is empty or just numbers
-        if (empty($itemName) || is_numeric($itemName) || containsOnlyLatinLetters($itemName)) {
+        if (empty($itemName) || is_numeric($itemName) || !containsOnlyLatinLetters1($itemName)) {
             $validForm = false;
             $invalidFields .= "<li class='list'>Nome do item é invalido</li>";
         }
@@ -462,15 +462,30 @@ else if (arrayKeysExists(["estado", "tipo", "id"], $_REQUEST) && checkKeysValues
                 // Using prepared statements here so to protect against sql injections if the values were properly sanitized
 
 
+				// Deleting all subitem_allowed_values attached to the subitems attached to the deleting item
+	            $deleteSubItemAllowedValuesQuery = mysqli_prepare($link,"DELETE FROM subitem_allowed_value WHERE subitem_id IN (SELECT id FROM subitem WHERE item_id = ?)");
+				mysqli_stmt_bind_param($deleteSubItemAllowedValuesQuery,"s", $_REQUEST["id"]);
+
+				// Deleting all the values attached to the subitem that's attached to the deleting item
+	            $deleteValuesQuery = mysqli_prepare($link,"DELETE FROM value WHERE subitem_id IN (SELECT id FROM subitem WHERE item_id = ?)");
+				mysqli_stmt_bind_param($deleteValuesQuery,"s", $_REQUEST["id"]);
+
+				// Deleting all the subitems attached to the deleting item
+	            $deleteSubItemQuery = mysqli_prepare($link,"DELETE FROM subitem WHERE subitem.item_id = ?");
+				mysqli_stmt_bind_param($deleteSubItemQuery,"s", $_REQUEST["id"]);
+
 	            // Deleting the correct value on the tables using prepared statements
                 $deleteItemQuery = mysqli_prepare($link, "DELETE FROM item WHERE item.id = ? ");
                 mysqli_stmt_bind_param($deleteItemQuery, "s", $_REQUEST["id"]);
 
                 // Gets the result of the query execution
+                $deleteSubItemAllowedValueResult = mysqli_stmt_execute($deleteSubItemAllowedValuesQuery);
+                $deleteValuesResult = mysqli_stmt_execute($deleteValuesQuery);
+                $deleteSubItemResult = mysqli_stmt_execute($deleteSubItemQuery);
                 $deleteItemResult = mysqli_stmt_execute($deleteItemQuery);
 
                 // checking whether the query was successful or not
-                if (!$deleteItemResult) {
+                if (!$deleteSubItemAllowedValueResult || !$deleteValuesResult || !$deleteSubItemResult || !$deleteItemResult) {
                     // Gets the error that happened in the prepared statement and outputs the value in htmlspecialchars
                     $error = mysqli_stmt_error($deleteItemQuery);
 
@@ -582,7 +597,7 @@ else if (arrayKeysExists(["estado", "tipo", "id"], $_REQUEST) && checkKeysValues
         $subId = htmlspecialchars($subId);
 
         // Check itemName received is empty or just numbers
-        if (empty($allowedValue) || is_numeric($allowedValue) || containsOnlyLatinLetters($allowedValue)) {
+        if (empty($allowedValue) || is_numeric($allowedValue) || !containsOnlyLatinLetters($allowedValue)) {
             $validForm = false;
             $invalidFields .= "<li class='list'>Nome do valor permitido é inválid</li>";
         }
@@ -1121,7 +1136,7 @@ else if (arrayKeysExists(["estado", "tipo", "id"], $_REQUEST) && checkKeysValues
 		$formOrder = htmlspecialchars( $formOrder );
 
 		// Check itemName received is empty or just numbers
-		if (empty($subitemName) || is_numeric($subitemName) || containsOnlyLatinLetters($subitemName)) {
+		if (empty($subitemName) || is_numeric($subitemName) || !containsOnlyLatinLetters($subitemName)) {
 			$validForm     = false;
 			$invalidFields .= "<li class='list'>O nome do subitem é invalido</li>";
 		}
@@ -1636,17 +1651,30 @@ else if (arrayKeysExists(["estado", "tipo", "id"], $_REQUEST) && checkKeysValues
 				// Using prepared statements here so to protect against sql injections if the values were properly sanitized
 
 
-				// Deleting the correct value on the tables using prepared statements
-				$deleteItemQuery = mysqli_prepare($link, "DELETE FROM subitem WHERE subitem.id = ? ");
-				mysqli_stmt_bind_param($deleteItemQuery, "s", $_REQUEST["id"]);
+				// Deleting all subitem_allowed_values attached to the subitems attached to the deleting item
+				$deleteSubItemAllowedValuesQuery = mysqli_prepare($link,"DELETE FROM subitem_allowed_value WHERE subitem_id = ?");
+				mysqli_stmt_bind_param($deleteSubItemAllowedValuesQuery,"s", $_REQUEST["id"]);
+
+				// Deleting all the values attached to the subitem that's attached to the deleting item
+				$deleteValuesQuery = mysqli_prepare($link,"DELETE FROM value WHERE subitem_id = ?");
+				mysqli_stmt_bind_param($deleteValuesQuery,"s", $_REQUEST["id"]);
+
+				// Deleting all the subitems attached to the deleting item
+				$deleteSubItemQuery = mysqli_prepare($link,"DELETE FROM subitem WHERE id = ?");
+				mysqli_stmt_bind_param($deleteSubItemQuery,"s", $_REQUEST["id"]);
 
 				// Gets the result of the query execution
-				$deleteItemResult = mysqli_stmt_execute($deleteItemQuery);
+				$deleteSubItemAllowedValuesResult = mysqli_stmt_execute($deleteSubItemAllowedValuesQuery);
+				$deleteValuesResult = mysqli_stmt_execute($deleteValuesQuery);
+				$deleteSubItemResult = mysqli_stmt_execute($deleteSubItemQuery);
 
 				// checking whether the query was successful or not
-				if (!$deleteItemResult) {
+				if (!$deleteSubItemAllowedValuesResult || !$deleteValuesResult || !$deleteSubItemResult) {
 					// Gets the error that happened in the prepared statement and outputs the value in htmlspecialchars
-					$error = mysqli_stmt_error($deleteItemQuery);
+
+					$error = "<li class='list'>" . mysqli_stmt_error($deleteSubItemAllowedValuesQuery) . "</li>";
+					$error .= "<li class='list'>" . mysqli_stmt_error($deleteValuesQuery) . "</li>";
+					$error .= "<li class='list'>" . mysqli_stmt_error($deleteSubItemQuery) . "</li>";
 
 					mysqli_rollback($link);
 
