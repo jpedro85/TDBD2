@@ -1672,14 +1672,17 @@ else if (arrayKeysExists(["estado", "tipo", "id"], $_REQUEST) && checkKeysValues
 				if (!$deleteSubItemAllowedValuesResult || !$deleteValuesResult || !$deleteSubItemResult) {
 					// Gets the error that happened in the prepared statement and outputs the value in htmlspecialchars
 
-					$error = "<li class='list'>" . mysqli_stmt_error($deleteSubItemAllowedValuesQuery) . "</li>";
-					$error .= "<li class='list'>" . mysqli_stmt_error($deleteValuesQuery) . "</li>";
-					$error .= "<li class='list'>" . mysqli_stmt_error($deleteSubItemQuery) . "</li>";
+					$error =  mysqli_stmt_error($deleteSubItemAllowedValuesQuery);
+					$listErrors ="<li class='list'>" . htmlspecialchars($error). "</li>";
+					$error = mysqli_stmt_error($deleteValuesQuery);
+					$listErrors .="<li class='list'>" . htmlspecialchars($error). "</li>";
+					$error = mysqli_stmt_error($deleteSubItemQuery);
+					$listErrors .="<li class='list'>" . htmlspecialchars($error). "</li>";
 
 					mysqli_rollback($link);
 
 					echo "<div class='error-div'>
-                           <strong class='list' >Ocorreu um erro na Atualização de dados: " . htmlspecialchars($error) . "</strong>
+                           <strong class='list' >Ocorreu um erro na Atualização de dados: <br> $listErrors </strong>
                           </div>";
 
 					voltar_atras();
@@ -1777,6 +1780,263 @@ else if (arrayKeysExists(["estado", "tipo", "id"], $_REQUEST) && checkKeysValues
             </div>";
 
 			$_SESSION["subItemUpdated"] = false;
+
+		}
+	}
+}else if ( arrayKeysExists( [ "estado", "tipo", "id" ], $_REQUEST ) && checkKeysValues( ["estado","tipo"], $_REQUEST, [ "editar", "unidade" ] ) ) {
+	// checking if the item is going to be updated or not
+	if ( array_key_exists( "updateState", $_REQUEST ) && $_REQUEST["updateState"] == "updating" ) {
+
+		// Server-side verifications, can be tested with postman
+		$validForm     = true;
+		$invalidFields = "";
+
+		// Pattern for the units
+		$pattern = '/^[a-zA-Z0-9\s^\/]+$/';
+
+		// Trim the received values, so it has no spaces in the edges and is not a html special char
+		$unitName = ( isset( $_REQUEST["unitName"] ) ) ? trim( $_REQUEST["unitName"] ) : "";
+		$unitName = htmlspecialchars( $unitName );
+
+		// Check unitName received is empty or just numbers
+		if ( empty( $unitName ) || is_numeric( $unitName ) || ! preg_match( $pattern, $unitName ) ) {
+			$validForm     = false;
+			$invalidFields .= "<li class='list'>O nome da unidade é invalido</li>";
+		}
+		// Checks whether the unit id received is valid or not
+		if ( empty( $_REQUEST["id"] ) || ! is_numeric( $_REQUEST["id"] ) || $_REQUEST["id"] != $_REQUEST["unitId"] ) {
+			$validForm     = false;
+			$invalidFields .= "<li class='list'>O id da unidade é invalido</li>";
+		}
+		// Checks if there were any errors in the server side verification
+		if ( ! $validForm ) {
+			echo "<div class='error-div'>$invalidFields</div><hr>";
+			voltar_atras();
+		}// if there were no problems update the database
+		else {
+			if ( ! $_SESSION["unitUpdated"] && mysqli_begin_transaction( $link ) ) {
+				// Using prepared statements here so to protect against sql injections if the values were properly sanitized
+
+				// Updating the correct value on the tables using prepared statements
+				$updateUnitQuery = mysqli_prepare( $link, "UPDATE subitem_unit_type SET name = ? WHERE id = ?" );
+				mysqli_stmt_bind_param( $updateUnitQuery, "ss", $unitName, $_REQUEST["id"] );
+
+				// Gets the result of the query execution
+				$updateUnitResult = mysqli_stmt_execute( $updateUnitQuery );
+
+				// Checking whether the query was successful or not
+				if ( ! $updateUnitResult ) {
+
+					// Gets the error that happened in the prepared statement and outputs the value in htmlspecialchars
+					$error = mysqli_stmt_error( $updateUnitQuery );
+
+					mysqli_rollback( $link );
+
+					echo "<div class='error-div'>
+                            <strong class='list' >Ocorreu um erro na Atualização de dados: " . htmlspecialchars( $error ) . "</strong>
+                          </div>";
+
+					voltar_atras();
+				} else {
+
+					echo "<div class='contorno'>
+                            <p class='success'>Atualizações realizadas com sucesso</p>
+                          </div>
+                          <p>Clique em continuar para voltar a pagina de gestao de itens</p>
+                          <hr><a href='" . get_site_url() . "/gestao-de-unidades'><button class='button-33'>Continuar</button></a>";
+
+					// Commits the transaction
+					mysqli_commit( $link );
+					$_SESSION["unitUpdated"] = true;
+				}
+			}// Checking if the unit was already updated
+			elseif ( $_SESSION["unitUpdated"] ) {
+				echo "<div class='error-div'>
+                         <b class='list'>Os dados ja foram atualizados</b>
+                      </div>
+                      <hr>
+                      <a href='" . get_site_url() . "/gestao-de-unidades'><button class='button-33'>Continuar</button></a>";
+			}// If it doesn't pass all checks it means an error occurred starting the transaction
+			else {
+
+				echo "<div class='error-div'>
+                        <strong class='list' >Ocorreu um erro no começo da Atualização de dados: " . mysqli_error( $link ) . "</strong>
+                      </div>";
+
+				voltar_atras();
+			}
+		}
+	} else {
+		echo "<form method='post' action='" . get_permalink() . basename( $_SERVER["REQUEST_URI"] ) . "'>
+              <table class='content-table'>";
+		echo "
+              <thead>
+                <tr>
+                    <th>id</th>
+                    <th>unidade</th>
+                </tr>
+              </thead>";
+
+		// Fetching the name and id for the requested unit using prepared statements to prevent SQL injection.
+		$unitQuery = mysqli_prepare( $link, "SELECT id,name FROM subitem_unit_type WHERE id = ?" );
+		mysqli_stmt_bind_param( $unitQuery, "s", $_REQUEST["id"] );
+
+		// Gets the result of the query execution
+		$unitResult = mysqli_stmt_execute( $unitQuery );
+
+		// Checking if the query was successful
+		if ( ! $unitResult ) {
+
+			// Gets the error that happened in the prepared statement and outputs the value in htmlspecialchars
+			$error = mysqli_stmt_error( $unitQuery );
+
+			echo "<div class='error-div'>
+                    <strong class='list' >Ocorreu um erro na consulta:" . htmlspecialchars( $error ) . "</strong>
+                  </div>";
+
+			voltar_atras();
+		} else {
+			$unitResult = mysqli_stmt_get_result( $unitQuery );
+			$unitData   = mysqli_fetch_assoc( $unitResult );
+
+			echo "
+                <tbody>
+                    <tr>
+                        <td><strong>{$_REQUEST["id"]}</strong></td>
+                        <td><input type='text' name='unitName' value='{$unitData["name"]}'></td>
+                    </tr>
+                </tbody>
+                </table>
+                <input type='hidden' name='updateState' value='updating'>
+                <input type='hidden' name='unitId' value='{$_REQUEST["id"]}'>
+                <p>Clique em <strong>Submeter</strong> para atualizar os dados</p>
+                <hr>
+                <div class='button-container'>
+                    <button class='button-33' type='submit'>Submeter</button></form>
+                    " . goBackToOriginalPage( "gestao-de-unidades" ) . "
+                </div>";
+
+			$_SESSION["unitUpdated"] = false;
+		}
+	}
+}else if (arrayKeysExists(["estado", "tipo", "id"], $_REQUEST) && checkKeysValues(["estado", "tipo"], $_REQUEST, ["apagar", "unidade"])) {
+	if (array_key_exists("updateState", $_REQUEST) && $_REQUEST["updateState"] == "deleting") {
+		// Server-side verifications, can be tested with postman
+		$validForm = true;
+		$invalidFields = "";
+
+		// Checks whether the unit id received is valid or not
+		if (empty($_REQUEST["id"]) || !is_numeric($_REQUEST["id"]) || $_REQUEST["id"] != $_REQUEST["unitId"]) {
+			$validForm = false;
+			$invalidFields .= "<li class='list'>O id do Item é invalido</li>";
+		}
+		// Checks if there were any errors in the server side verification
+		if (!$validForm) {
+			echo "<div class='error-div'>$invalidFields</div><hr>";
+			voltar_atras();
+		} // if there were no problems update the database
+		else {
+			if (!$_SESSION["unitUpdated"] && mysqli_begin_transaction($link)) {
+				// Using prepared statements here so to protect against sql injections if the values were properly sanitized
+
+
+				// Deleting the subitem_unit_type requested
+				$deleteUnitQuery = mysqli_prepare($link,"DELETE FROM subitem_unit_type WHERE id = ?");
+				mysqli_stmt_bind_param($deleteUnitQuery,"s", $_REQUEST["id"]);
+
+				$deleteUnitResult = mysqli_stmt_execute($deleteUnitQuery);
+
+				// checking whether the query was successful or not
+				if (!$deleteUnitResult) {
+					// Gets the error that happened in the prepared statement and outputs the value in htmlspecialchars
+
+					$error = mysqli_stmt_error($deleteUnitQuery);
+
+					mysqli_rollback($link);
+
+					echo "<div class='error-div'>
+                           <strong class='list' >Ocorreu um erro na Atualização de dados: <br> $listErrors </strong>
+                          </div>";
+
+					voltar_atras();
+				} else {
+
+					echo "<div class='contorno'>
+                            <p class='success'>Eliminações realizadas com sucesso</p>
+                          </div>
+                          <p>Clique em continuar para voltar a pagina de gestao de itens</p>
+                          <hr><a href='" . get_site_url() . "/gestao-de-unidades'><button class='button-33'>Continuar</button></a>";
+
+					// Commit the transaction
+					mysqli_commit($link);
+					$_SESSION["unitUpdated"] = true;
+				}
+			}// Checking if the unit was already updated
+			else if ($_SESSION["unitUpdated"]) {
+				echo "<div class='error-div'>
+                    <b class='list'>Os dados ja foram atualizados</b>
+                  </div>
+                    <a href='" . get_site_url() . "/gestao-de-unidades'><button class='button-33'>Continuar</button></a>";
+			} else {
+
+				echo "<div class='error-div'>
+                    <strong class='list' >Ocorreu um erro no começo de Atualização de dados: " . mysqli_error($link) . "</strong>
+                  </div>";
+
+				voltar_atras();
+			}
+		}
+	} else {
+		echo "<strong>Estamos prestes a apagar os dados abaixo da base de dados. Confirma que pertende apagar os mesmos?</strong>
+          <table class='content-table'>
+          <thead>
+            <tr>
+                <th>id</th>
+                <th>name</th>
+            </tr>
+          </thead>";
+
+		// Fetching the name and id for the requested unit using prepared statements to prevent SQL injection.
+		$unitQuery = mysqli_prepare( $link, "SELECT id,name FROM subitem_unit_type WHERE id = ?" );
+		mysqli_stmt_bind_param( $unitQuery, "s", $_REQUEST["id"] );
+
+		// Gets the result of the query execution
+		$unitQueryResult = mysqli_stmt_execute($unitQuery);
+
+		if (!$unitQueryResult) {
+			// Gets the error that happened in the prepared statement and outputs the value in htmlspecialchars
+			$error = mysqli_stmt_error($unitQuery);
+
+			mysqli_rollback($link);
+
+			echo "<div class='error-div'>
+                    <strong class='list' >Ocorreu um erro na consulta:" . htmlspecialchars($error) . "</strong>
+                  </div>";
+
+			voltar_atras();
+		} else {
+			$unitQueryResult = mysqli_stmt_get_result($unitQuery);
+			$unitData = mysqli_fetch_assoc($unitQueryResult);
+
+			echo "
+            <tbody>
+                <tr>
+                    <td><strong>{$_REQUEST["id"]}</strong></td>
+                    <td><strong>{$unitData["name"]}</strong></td>
+                </tr>
+            </tbody>
+            </table>
+            <form method='post' action='" . get_permalink() . basename($_SERVER["REQUEST_URI"]) . "'>
+            <input type='hidden' name='updateState' value='deleting'>
+            <input type='hidden' name='unitId' value='{$_REQUEST["id"]}'>
+            <p>Clique em <strong>Submeter</strong> para apagar os dados</p>
+            <hr>
+            <div class='button-container'>
+                <button class='button-33' type='submit'>Submeter</button></form>
+                " . goBackToOriginalPage("gestao-de-unidades") . "
+            </div>";
+
+			$_SESSION["unitUpdated"] = false;
 
 		}
 	}

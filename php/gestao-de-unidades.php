@@ -3,9 +3,7 @@ require_once("custom/php/common.php");
 
 if(!is_user_logged_in() & current_user_can('manage_unit_types')){
     echo 'O Utilizador não tem permissões para aceder à página';
-    'Caso queira aceder à pagina tem que ter as permissões necessárias';
-}else {
-    echo 
+    echo 'Caso queira aceder à pagina tem que ter as permissões necessárias';
 }else{
     $estado = '';
     if (isset($_REQUEST["estado"])) {
@@ -77,8 +75,8 @@ if(!is_user_logged_in() & current_user_can('manage_unit_types')){
             }
             if (!empty($items)) {
                 echo '<td>' . implode(', ', $items) . '</td>';
-                echo '<td><a class="links" href="http://localhost/sgbd/edicao-de-dados/">[editar]</aclas><br>
-                     <a class="links" href="http://localhost/sgbd/edicao-de-dados/">[desativar]</a><br>
+                echo '<td><a class="links" href="'.$editDataPage.'?estado=editar&tipo=unidade&id=' . $lineUnit["UnitID"] . '">[editar]</a><br>
+                        <a  class="links" href="'.$editDataPage.'?estado=apagar&tipo=unidade&id=' . $lineUnit["UnitID"] . '">[apagar]</a><br>
                       </td>';
             } else {
                 echo '<td> Não há tipos de unidades </td></tr>';
