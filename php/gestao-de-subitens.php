@@ -4,37 +4,46 @@ require_once("custom/php/common.php");
 //connect();
 if(!is_user_logged_in() && current_user_can('manage_subitems')){
     echo 'O Utilizador não tem permissões para aceder à página';
+    echo 'Caso queira aceder à pagina tem que ter as permissões necessárias';
 }else {
+    echo 2;
     $estado='';
     $listUNIT= '';
     $lista = '';
+    $erro = false;
     if (isset($_REQUEST["estado"])) {
         $estado = $_REQUEST["estado"];
+        $erro = true;
     }
     $pattern = '/^[a-zA-Z0-9\s^\/]+$/';
     $camposF = '<h3><b>Gestão de subitens - inserção</b></h3><br>';
-    $erro = false;
+    
     if ($estado == "inserir") {//caso o hidden estado esteja a inserir vai aparecer esta parte do código
         //Verifica se as variáveis estão atribuidas ao array $_REQUEST, caso contrário é atribuido o valor de ''
         $ITname = '';
         if (isset($_REQUEST["ITname"])) {
             $ITname = $_REQUEST["ITname"];
+            $erro = true;
         }
         $Eitem = '';
         if (isset($_REQUEST["Eitem"])) {
             $Eitem = $_REQUEST["Eitem"];
+            $erro = true;
         }
         $slctunit = '';
         if (isset($_REQUEST["slctunit"])) {
             $slctunit = $_REQUEST["slctunit"];
+            $erro = true;
         }
         $formCamp = '';
         if (isset($_REQUEST["formCamp"])) {
             $formCamp = $_REQUEST["formCamp"];
+            $erro = true;
         }
         $mandatory = '';
         if (isset($_REQUEST["mandatory"])) {
             $mandatory = $_REQUEST["mandatory"];
+            $erro = true; 
         }
         // Verificação do subitem name
         if (empty($ITname) || is_numeric($ITname) || !preg_match($pattern, $ITname)) {
@@ -154,9 +163,9 @@ if(!is_user_logged_in() && current_user_can('manage_subitems')){
                  <td>' . $lineSubItem["SubFFO"] . '</td>
                  <td>' . $lineSubItem["mandatory"] . '</td>
                  <td>' . $lineSubItem["state"] . '</td>
-                 <td><a  class="links" href="'.$editDataPage.'?estado=editar&tipo=subitem&id=' . $lineSubItem["SubID"] . '">[editar]</a><br>
-                     <a  class="links"  href="'.$editDataPage.'?estado=desativar&tipo=subitem&id=' . $lineSubItem["SubID"] . '">[desativar]</a><br>
-                     <a  class="links" href="'.$editDataPage.'?estado=apagar&tipo=subitem&id=' . $lineSubItem["SubID"] . '">[apagar]</a>
+                 <td><a  class="links" href="http://localhost/sgbd/edicao-de-dados/">[editar]</a><br>
+                     <a  class="links"  href="http://localhost/sgbd/edicao-de-dados/">[desativar]</a><br>
+                     <a  class="links" href="http://localhost/sgbd/edicao-de-dados/">[apagar]</a>
                  </td>
                  </tr>';
                 }

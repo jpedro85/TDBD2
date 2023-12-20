@@ -3,10 +3,14 @@ require_once("custom/php/common.php");
 
 if(!is_user_logged_in() & current_user_can('manage_unit_types')){
     echo 'O Utilizador não tem permissões para aceder à página';
+    'Caso queira aceder à pagina tem que ter as permissões necessárias';
+}else {
+    echo 
 }else{
     $estado = '';
     if (isset($_REQUEST["estado"])) {
         $estado = $_REQUEST["estado"];
+        $erro = true;
     }
     $pattern = '/^[a-zA-Z0-9\s^\/]+$/';
     $camposF="";
